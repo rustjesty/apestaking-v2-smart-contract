@@ -44,7 +44,7 @@ export const WAPE_COIN: Params<string> = {
 };
 
 export const BEACON: Params<string> = {
-  [Network.apechain]: "",
+  [Network.apechain]: "0x00000000000087c6dbaDC090d39BC10316f20658",
   [Network.curtis]: "0x554309B0888c37139D6E31aBAe30B4502915B5DB",
 };
 

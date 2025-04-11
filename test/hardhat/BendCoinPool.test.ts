@@ -153,4 +153,28 @@ makeSuite("BendCoinPool", (contracts: Contracts, env: Env, snapshots: Snapshots)
     await expect(tx).changeTokenBalances(contracts.wrapApeCoin, [bob.address], [apeCoinAmount]);
     await expectPendingAmountChanged((await tx).blockNumber || 0, constants.Zero.sub(apeCoinAmount));
   });
+
+  it("depositNativeSelf", async () => {
+    let depositAmount = makeBN18(10000);
+    let tx = contracts.bendCoinPool.connect(alice).depositNativeSelf({ value: depositAmount });
+    await expect(tx).changeTokenBalances(contracts.wrapApeCoin, [contracts.bendCoinPool.address], [depositAmount]);
+    await expectPendingAmountChanged((await tx).blockNumber || 0, depositAmount);
+
+    lastRevert = "depositNativeSelf";
+    await snapshots.capture(lastRevert);
+  });
+
+  it("withdrawNativeSelf", async () => {
+    let depositAmount = makeBN18(10000);
+    let tx = contracts.bendCoinPool.connect(alice).withdrawNativeSelf(depositAmount);
+    await expect(tx).changeTokenBalances(
+      contracts.wrapApeCoin,
+      [contracts.bendCoinPool.address],
+      [constants.Zero.sub(depositAmount)]
+    );
+    await expectPendingAmountChanged((await tx).blockNumber || 0, constants.Zero.sub(depositAmount));
+
+    lastRevert = "withdrawNativeSelf";
+    await snapshots.capture(lastRevert);
+  });
 });
