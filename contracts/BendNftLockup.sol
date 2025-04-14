@@ -78,7 +78,7 @@ contract BendNftLockup is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausab
     function deposit(
         address[] calldata nfts_,
         uint256[][] calldata tokenIds_
-    ) public onlyApes(nfts_) nonReentrant whenNotPaused {
+    ) public nonReentrant whenNotPaused onlyApes(nfts_) {
         require(nfts_.length == tokenIds_.length, "BendNftLockup: length not match");
         require(nftValut != address(0), "BendNftLockup: vault not set");
         require(address(delegationRegistryV2) != address(0), "BendNftLockup: delegationRegistryV2 not set");
@@ -113,7 +113,7 @@ contract BendNftLockup is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausab
     function withdraw(
         address[] calldata nfts_,
         uint256[][] calldata tokenIds_
-    ) public onlyApes(nfts_) nonReentrant whenNotPaused {
+    ) public nonReentrant whenNotPaused onlyApes(nfts_) {
         require(nfts_.length == tokenIds_.length, "BendNftLockup: length not match");
 
         address nft_;
@@ -148,7 +148,7 @@ contract BendNftLockup is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausab
         address[] calldata nfts_,
         uint256[][] calldata tokenIds_,
         address owner_
-    ) public onlyBot onlyApes(nfts_) nonReentrant whenNotPaused {
+    ) public nonReentrant whenNotPaused onlyBot onlyApes(nfts_) {
         require(nfts_.length == tokenIds_.length, "BendNftLockup: length not match");
 
         address nft_;
@@ -174,6 +174,10 @@ contract BendNftLockup is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausab
 
             emit NftFinalized(nft_, tokenIds_[i], owner_);
         }
+    }
+
+    function getNftTokenData(address nft_, uint256 tokenId_) public view returns (TokenData memory tokenData) {
+        return nftTokenDatas[nft_][tokenId_];
     }
 
     function getBotAdmin() public view returns (address) {

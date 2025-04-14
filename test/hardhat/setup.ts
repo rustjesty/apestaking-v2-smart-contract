@@ -30,6 +30,7 @@ import {
   MockDelegationRegistryV2,
   MockAddressProviderV2,
   MockWAPE,
+  BendNftLockup,
 } from "../../typechain-types";
 import { Contract, BigNumber, constants } from "ethers";
 import { parseEther } from "ethers/lib/utils";
@@ -69,6 +70,7 @@ export interface Contracts {
   bnftStMayc: MockBNFT;
   bnftStBakc: MockBNFT;
   // bend ape staking v2
+  bendNftLockup: BendNftLockup;
   bendStakeManager: BendStakeManagerTester;
   bendCoinPool: BendCoinPool;
   bendNftPool: BendNftPool;
@@ -187,6 +189,14 @@ export async function setupEnv(env: Env, contracts: Contracts): Promise<void> {
     contracts.stBakc.address
   );
 
+  await contracts.bendNftLockup.initialize(
+    contracts.nftVault.address,
+    contracts.bayc.address,
+    contracts.mayc.address,
+    contracts.bakc.address,
+    contracts.mockDelegationRegistryV2.address
+  );
+
   await contracts.bendStakeManager.updateRewardsStrategy(contracts.bayc.address, contracts.baycStrategy.address);
   await contracts.bendStakeManager.updateRewardsStrategy(contracts.mayc.address, contracts.maycStrategy.address);
   await contracts.bendStakeManager.updateRewardsStrategy(contracts.bakc.address, contracts.bakcStrategy.address);
@@ -254,6 +264,7 @@ export async function setupContracts(): Promise<Contracts> {
   const bnftStBakc = await deployContract<MockBNFT>("MockBNFT", ["bnftStBakc", "bnftStBakc", stBayc.address]);
 
   // bend staking v2
+  const bendNftLockup = await deployContract<BendNftLockup>("BendNftLockup", []);
   const bendStakeManager = await deployContract<BendStakeManagerTester>("BendStakeManagerTester", []);
   const bendCoinPool = await deployContract<BendCoinPool>("BendCoinPool", []);
   const bendNftPool = await deployContract<BendNftPool>("BendNftPool", []);
@@ -328,6 +339,7 @@ export async function setupContracts(): Promise<Contracts> {
     bnftStBayc,
     bnftStMayc,
     bnftStBakc,
+    bendNftLockup,
     bendStakeManager,
     bendCoinPool,
     bendNftPool,
