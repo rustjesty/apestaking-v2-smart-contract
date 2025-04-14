@@ -74,7 +74,7 @@ export const DELEAGATE_CASH: Params<string> = {
 };
 
 export const BNFT_REGISTRY: Params<string> = {
-  [Network.apechain]: "",
+  [Network.apechain]: "0xcAbe4E00a44Ff38990A42f43312d470DE5796FA6",
   [Network.curtis]: "0xc31078cC745daE8f577EdBa2803405CE571cb9f8",
 };
 

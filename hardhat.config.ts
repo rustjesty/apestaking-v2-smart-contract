@@ -79,14 +79,15 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       curtis: ETHERSCAN_KEY,
+      apechain: ETHERSCAN_KEY,
     },
     customChains: [
       {
         network: "ApeChain",
         chainId: 33139,
         urls: {
-          apiURL: "https://apechain.calderachain.xyz/http",
-          browserURL: "https://apechain.calderachain.xyz/http",
+          apiURL: "https://api.apescan.io/api",
+          browserURL: "https://apescan.io",
         },
       },
       {
