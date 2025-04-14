@@ -85,8 +85,9 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
 
     function deposit(
         address[] calldata nfts_,
-        uint256[][] calldata tokenIds_
-    ) external override onlyApes(nfts_) nonReentrant whenNotPaused {
+        uint256[][] calldata tokenIds_,
+        address owner_
+    ) external override onlyApes(nfts_) onlyStaker nonReentrant whenNotPaused {
         address nft_;
         uint256 tokenId_;
         PoolState storage pool_;
@@ -98,26 +99,29 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
             nft_ = nfts_[i];
             pool_ = poolStates[nft_];
             _compoundApeCoin(pool_);
+
             require(tokenIds_[i].length > 0, "BendNftPool: empty tokenIds");
             for (uint256 j = 0; j < tokenIds_[i].length; j++) {
                 tokenId_ = tokenIds_[i][j];
-                IERC721Upgradeable(nft_).safeTransferFrom(msg.sender, address(staker), tokenId_);
                 pool_.rewardsDebt[tokenId_] = pool_.accumulatedRewardsPerNft;
             }
-            staker.mintStNft(pool_.stakedNft, msg.sender, tokenIds_[i]);
-            emit NftDeposited(nft_, tokenIds_[i], msg.sender);
+
+            staker.mintStNft(pool_.stakedNft, owner_, tokenIds_[i]);
+
+            emit NftDeposited(nft_, tokenIds_[i], owner_);
         }
     }
 
     function withdraw(
         address[] calldata nfts_,
-        uint256[][] calldata tokenIds_
-    ) external override onlyApes(nfts_) nonReentrant whenNotPaused {
+        uint256[][] calldata tokenIds_,
+        address owner_
+    ) external override onlyApes(nfts_) onlyStaker nonReentrant whenNotPaused {
         _checkDuplicateNfts(nfts_);
         _checkDuplicateTokenIds(tokenIds_);
 
         uint32[][] memory v2PoolIds_ = new uint32[][](0);
-        _claim(msg.sender, msg.sender, nfts_, tokenIds_, v2PoolIds_);
+        _claim(owner_, owner_, nfts_, tokenIds_, v2PoolIds_);
 
         PoolState storage pool_;
         uint256 tokenId_;
@@ -125,26 +129,23 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
 
         for (uint256 i = 0; i < nfts_.length; i++) {
             require(tokenIds_[i].length > 0, "BendNftPool: empty tokenIds");
+
             nft_ = nfts_[i];
             pool_ = poolStates[nft_];
+
             for (uint256 j = 0; j < tokenIds_[i].length; j++) {
                 tokenId_ = tokenIds_[i][j];
-                pool_.stakedNft.safeTransferFrom(msg.sender, address(this), tokenId_);
+                require(pool_.stakedNft.ownerOf(tokenId_) == owner_, "BendNftPool: invalid owner");
             }
 
-            pool_.stakedNft.burn(tokenIds_[i]);
+            staker.burnStNft(pool_.stakedNft, owner_, tokenIds_[i]);
 
             for (uint256 j = 0; j < tokenIds_[i].length; j++) {
                 tokenId_ = tokenIds_[i][j];
-                IERC721Upgradeable(pool_.stakedNft.underlyingAsset()).safeTransferFrom(
-                    address(this),
-                    msg.sender,
-                    tokenId_
-                );
                 delete pool_.rewardsDebt[tokenId_];
             }
 
-            emit NftWithdrawn(nft_, tokenIds_[i], msg.sender);
+            emit NftWithdrawn(nft_, tokenIds_[i], owner_);
         }
     }
 
@@ -356,22 +357,6 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
     function getNftStateUI(address nft_, uint256 tokenId) external view returns (uint256 rewardsDebt) {
         PoolState storage pool = poolStates[nft_];
         rewardsDebt = pool.rewardsDebt[tokenId];
-    }
-
-    function onERC721Received(
-        address /*operator*/,
-        address /*from*/,
-        uint256 /*tokenId*/,
-        bytes calldata /*data*/
-    ) external view returns (bytes4) {
-        bool isValidNFT = (bayc == msg.sender || mayc == msg.sender || bakc == msg.sender);
-        if (!isValidNFT) {
-            isValidNFT = (address(poolStates[bayc].stakedNft) == msg.sender ||
-                address(poolStates[mayc].stakedNft) == msg.sender ||
-                address(poolStates[bakc].stakedNft) == msg.sender);
-        }
-        require(isValidNFT, "BendNftPool: not ape nft");
-        return this.onERC721Received.selector;
     }
 
     function setPause(bool flag) public onlyOwner {

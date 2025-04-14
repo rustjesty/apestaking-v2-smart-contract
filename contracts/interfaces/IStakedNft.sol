@@ -2,10 +2,9 @@
 pragma solidity 0.8.18;
 
 import {IERC721MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/interfaces/IERC721MetadataUpgradeable.sol";
-import {IERC721ReceiverUpgradeable} from "@openzeppelin/contracts-upgradeable/interfaces/IERC721ReceiverUpgradeable.sol";
 import {IERC721EnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/interfaces/IERC721EnumerableUpgradeable.sol";
 
-interface IStakedNft is IERC721MetadataUpgradeable, IERC721ReceiverUpgradeable, IERC721EnumerableUpgradeable {
+interface IStakedNft is IERC721MetadataUpgradeable, IERC721EnumerableUpgradeable {
     event Minted(address indexed to, uint256[] tokenId);
     event Burned(address indexed from, uint256[] tokenId);
 
@@ -13,7 +12,7 @@ interface IStakedNft is IERC721MetadataUpgradeable, IERC721ReceiverUpgradeable, 
 
     function mint(address to, uint256[] calldata tokenIds) external;
 
-    function burn(uint256[] calldata tokenIds) external;
+    function burn(address from, uint256[] calldata tokenIds) external;
 
     /**
      * @dev Returns the staker of the `tokenId` token.

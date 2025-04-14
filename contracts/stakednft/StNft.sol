@@ -8,7 +8,6 @@ import {ERC721EnumerableUpgradeable, ERC721Upgradeable} from "@openzeppelin/cont
 import {IERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import {IERC721MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol";
 import {IERC165Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
-import {IERC721ReceiverUpgradeable} from "@openzeppelin/contracts-upgradeable/interfaces/IERC721ReceiverUpgradeable.sol";
 
 import {IStakedNft} from "../interfaces/IStakedNft.sol";
 import {INftVault} from "../interfaces/INftVault.sol";
@@ -51,18 +50,12 @@ abstract contract StNft is IStakedNft, OwnableUpgradeable, ReentrancyGuardUpgrad
 
         _nft = nft_;
         nftVault = nftVault_;
-        _nft.setApprovalForAll(address(nftVault), true);
     }
 
     function supportsInterface(
         bytes4 interfaceId
     ) public view virtual override(IERC165Upgradeable, ERC721EnumerableUpgradeable) returns (bool) {
         return interfaceId == type(IStakedNft).interfaceId || super.supportsInterface(interfaceId);
-    }
-
-    function onERC721Received(address, address, uint256, bytes calldata) external view override returns (bytes4) {
-        require(msg.sender == address(_nft), "StNft: nft not acceptable");
-        return IERC721ReceiverUpgradeable.onERC721Received.selector;
     }
 
     function setBnftRegistry(address bnftRegistry_) external override onlyOwner {
@@ -76,24 +69,31 @@ abstract contract StNft is IStakedNft, OwnableUpgradeable, ReentrancyGuardUpgrad
 
     function mint(address to_, uint256[] calldata tokenIds_) external override onlyAuthorized nonReentrant {
         address staker_ = msg.sender;
+        uint256 tokenId_;
+
         for (uint256 i = 0; i < tokenIds_.length; i++) {
-            _nft.safeTransferFrom(staker_, address(this), tokenIds_[i]);
+            tokenId_ = tokenIds_[i];
+            require(_nft.ownerOf(tokenId_) == address(nftVault), "StNft: underlying owner not vault");
         }
+
         nftVault.depositNft(address(_nft), tokenIds_, staker_);
+
         for (uint256 i = 0; i < tokenIds_.length; i++) {
-            _addTokenToStakerEnumeration(staker_, tokenIds_[i]);
-            _safeMint(to_, tokenIds_[i]);
+            tokenId_ = tokenIds_[i];
+            _addTokenToStakerEnumeration(staker_, tokenId_);
+            _safeMint(to_, tokenId_);
         }
 
         emit Minted(to_, tokenIds_);
     }
 
-    function burn(uint256[] calldata tokenIds_) external override nonReentrant {
+    function burn(address from_, uint256[] calldata tokenIds_) external override onlyAuthorized nonReentrant {
         uint256 tokenId_;
         for (uint256 i = 0; i < tokenIds_.length; i++) {
             tokenId_ = tokenIds_[i];
-            require(msg.sender == ownerOf(tokenId_), "stNft: only owner can burn");
-            require(address(nftVault) == _nft.ownerOf(tokenId_), "stNft: invalid tokenId_");
+
+            require(from_ == ownerOf(tokenId_), "stNft: only owner can burn");
+            require(address(nftVault) == _nft.ownerOf(tokenId_), "stNft: underlying owner not vault");
 
             _removeTokenFromStakerEnumeration(stakerOf(tokenId_), tokenId_);
             _burn(tokenId_);
@@ -101,11 +101,7 @@ abstract contract StNft is IStakedNft, OwnableUpgradeable, ReentrancyGuardUpgrad
 
         nftVault.withdrawNft(address(_nft), tokenIds_);
 
-        for (uint256 i = 0; i < tokenIds_.length; i++) {
-            tokenId_ = tokenIds_[i];
-            _nft.safeTransferFrom(address(this), msg.sender, tokenIds_[i]);
-        }
-        emit Burned(msg.sender, tokenIds_);
+        emit Burned(from_, tokenIds_);
     }
 
     function stakerOf(uint256 tokenId_) public view override returns (address) {
@@ -165,6 +161,33 @@ abstract contract StNft is IStakedNft, OwnableUpgradeable, ReentrancyGuardUpgrad
         }
 
         return _nft.tokenURI(tokenId_);
+    }
+
+    function _approve(address to, uint256 tokenId) internal virtual override(ERC721Upgradeable) {
+        to;
+        tokenId;
+
+        revert("stNft: approve not allowed");
+    }
+
+    function _setApprovalForAll(
+        address owner,
+        address operator,
+        bool approved
+    ) internal virtual override(ERC721Upgradeable) {
+        owner;
+        operator;
+        approved;
+
+        revert("stNft: approve not allowed");
+    }
+
+    function _transfer(address from, address to, uint256 tokenId) internal virtual override(ERC721Upgradeable) {
+        from;
+        to;
+        tokenId;
+
+        revert("stNft: transfer not allowed");
     }
 
     function setDelegateCash(address delegate_, uint256[] calldata tokenIds_, bool value_) external override {

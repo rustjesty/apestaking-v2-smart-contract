@@ -215,23 +215,12 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
         return _stakerStorage.pendingFeeAmount;
     }
 
-    function onERC721Received(
-        address /*operator*/,
-        address /*from*/,
-        uint256 /*tokenId*/,
-        bytes calldata /*data*/
-    ) external view returns (bytes4) {
-        require(
-            (_stakerStorage.bayc == msg.sender ||
-                _stakerStorage.mayc == msg.sender ||
-                _stakerStorage.bakc == msg.sender),
-            "BendStakeManager: not ape nft"
-        );
-        return this.onERC721Received.selector;
-    }
-
     function mintStNft(IStakedNft stNft_, address to_, uint256[] calldata tokenIds_) external onlyNftPool {
         stNft_.mint(to_, tokenIds_);
+    }
+
+    function burnStNft(IStakedNft stNft_, address from_, uint256[] calldata tokenIds_) external onlyNftPool {
+        stNft_.burn(from_, tokenIds_);
     }
 
     function withdrawApeCoin(uint256 required) external override onlyCoinPool returns (uint256 withdrawn) {
@@ -346,6 +335,31 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
 
     function claimApeCoin() external override onlyWithdrawStrategyOrBot {
         _claimApeCoin();
+    }
+
+    // Desposit NFTs
+    function depositNft(
+        address[] calldata nfts_,
+        uint256[][] calldata tokenIds_,
+        address owner_
+    ) public override onlyBot {
+        _depositNft(nfts_, tokenIds_, owner_);
+    }
+
+    function _depositNft(address[] memory nfts_, uint256[][] memory tokenIds_, address owner_) internal {
+        _stakerStorage.nftPool.deposit(nfts_, tokenIds_, owner_);
+    }
+
+    function withdrawNft(
+        address[] calldata nfts_,
+        uint256[][] calldata tokenIds_,
+        address owner_
+    ) public override onlyBot {
+        _withdrawNft(nfts_, tokenIds_, owner_);
+    }
+
+    function _withdrawNft(address[] memory nfts_, uint256[][] memory tokenIds_, address owner_) internal {
+        _stakerStorage.nftPool.withdraw(nfts_, tokenIds_, owner_);
     }
 
     // BAYC
@@ -669,6 +683,42 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
         }
         if (args_.unstake.bakc.length > 0) {
             _unstakeBakc(args_.unstake.bakc);
+        }
+
+        // withdraw some NFTs from NFT pool
+        address[] memory nfts_ = new address[](1);
+        uint256[][] memory tokenIds_ = new uint256[][](1);
+        if (args_.withdraw.bayc.tokenIds.length > 0) {
+            nfts_[0] = _stakerStorage.bayc;
+            tokenIds_[0] = args_.withdraw.bayc.tokenIds;
+            _withdrawNft(nfts_, tokenIds_, args_.withdraw.bayc.owner);
+        }
+        if (args_.withdraw.mayc.tokenIds.length > 0) {
+            nfts_[0] = _stakerStorage.mayc;
+            tokenIds_[0] = args_.withdraw.mayc.tokenIds;
+            _withdrawNft(nfts_, tokenIds_, args_.withdraw.mayc.owner);
+        }
+        if (args_.withdraw.bakc.tokenIds.length > 0) {
+            nfts_[0] = _stakerStorage.bakc;
+            tokenIds_[0] = args_.withdraw.bakc.tokenIds;
+            _withdrawNft(nfts_, tokenIds_, args_.withdraw.bakc.owner);
+        }
+
+        // deposit some NFTs to NFT pool
+        if (args_.deposit.bayc.tokenIds.length > 0) {
+            nfts_[0] = _stakerStorage.bayc;
+            tokenIds_[0] = args_.deposit.bayc.tokenIds;
+            _depositNft(nfts_, tokenIds_, args_.deposit.bayc.owner);
+        }
+        if (args_.deposit.mayc.tokenIds.length > 0) {
+            nfts_[0] = _stakerStorage.mayc;
+            tokenIds_[0] = args_.deposit.mayc.tokenIds;
+            _depositNft(nfts_, tokenIds_, args_.deposit.mayc.owner);
+        }
+        if (args_.deposit.bakc.tokenIds.length > 0) {
+            nfts_[0] = _stakerStorage.bakc;
+            tokenIds_[0] = args_.deposit.bakc.tokenIds;
+            _depositNft(nfts_, tokenIds_, args_.deposit.bakc.owner);
         }
 
         // stake some NFTs to NFT pool

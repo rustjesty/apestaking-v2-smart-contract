@@ -222,14 +222,14 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 tokenId_;
         IApeCoinStaking.Position memory position_;
 
-        // transfer nft and set permission
         for (uint256 i = 0; i < tokenIds_.length; i++) {
             // block partially stake from official contract
             tokenId_ = tokenIds_[i];
+            require(IERC721Upgradeable(nft_).ownerOf(tokenIds_[i]) == address(this), "nftVault: invalid owner");
+
             position_ = _vaultStorage.apeCoinStaking.getNftPosition(nft_, tokenId_);
             require(position_.stakedAmount == 0, "nftVault: nft already staked");
 
-            IERC721Upgradeable(nft_).safeTransferFrom(msg.sender, address(this), tokenIds_[i]);
             _vaultStorage.nfts[nft_][tokenIds_[i]] = NftStatus(msg.sender, staker_);
         }
         emit NftDeposited(nft_, msg.sender, staker_, tokenIds_);
@@ -244,8 +244,8 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         VaultLogic._refundSinglePool(_vaultStorage, nft_, tokenIds_);
 
-        // transfer nft to sender
         for (uint256 i = 0; i < tokenIds_.length; i++) {
+            require(IERC721Upgradeable(nft_).ownerOf(tokenIds_[i]) == address(this), "nftVault: invalid owner");
             require(
                 msg.sender == VaultLogic._ownerOf(_vaultStorage, nft_, tokenIds_[i]),
                 "nftVault: caller must be nft owner"
@@ -255,8 +255,6 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
                 "nftVault: staker must be same"
             );
             delete _vaultStorage.nfts[nft_][tokenIds_[i]];
-            // transfer nft
-            IERC721Upgradeable(nft_).safeTransferFrom(address(this), msg.sender, tokenIds_[i]);
         }
         emit NftWithdrawn(nft_, msg.sender, staker_, tokenIds_);
     }

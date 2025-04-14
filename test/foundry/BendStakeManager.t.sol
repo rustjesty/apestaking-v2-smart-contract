@@ -62,7 +62,6 @@ contract BendStakeManagerTest is SetupHelper {
         // deposit some nfts
         vm.startPrank(testUser);
         mockBAYC.setApprovalForAll(address(nftPool), true);
-        stBAYC.setApprovalForAll(address(nftPool), true);
 
         testBaycTokenIds[0] = 100;
         mockBAYC.mint(testBaycTokenIds[0]);
@@ -72,7 +71,16 @@ contract BendStakeManagerTest is SetupHelper {
         nfts[0] = address(mockBAYC);
         tokenIds[0] = testBaycTokenIds;
 
-        nftPool.deposit(nfts, tokenIds);
+        mockBAYC.safeTransferFrom(testUser, address(nftVault), testBaycTokenIds[0]);
+
+        vm.stopPrank();
+
+        // deposit all nfts
+        vm.startPrank(botAdmin);
+        IStakeManager.CompoundArgs memory compoundArgs0;
+        compoundArgs0.deposit.bayc.tokenIds = testBaycTokenIds;
+        compoundArgs0.deposit.bayc.owner = testUser;
+        stakeManager.compound(compoundArgs0);
         vm.stopPrank();
 
         // stake all nfts
@@ -95,10 +103,17 @@ contract BendStakeManagerTest is SetupHelper {
         vm.startPrank(testUser);
         uint256 rewardsAmount = nftPool.claimable(nfts, tokenIds);
         assertGt(rewardsAmount, 0, "rewards should greater than 0");
+        vm.stopPrank();
 
-        nftPool.withdraw(nfts, tokenIds);
+        // withdraw all nfts
+        vm.startPrank(botAdmin);
+        IStakeManager.CompoundArgs memory compoundArgs3;
+        compoundArgs3.withdraw.bayc.tokenIds = testBaycTokenIds;
+        compoundArgs3.withdraw.bayc.owner = testUser;
+        stakeManager.compound(compoundArgs3);
+        vm.stopPrank();
+
         uint256 balanceAmount = mockWAPE.balanceOf(testUser);
         assertEq(balanceAmount, rewardsAmount, "balance not match rewards");
-        vm.stopPrank();
     }
 }

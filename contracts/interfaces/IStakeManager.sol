@@ -55,7 +55,13 @@ interface IStakeManager {
 
     function withdrawApeCoin(uint256 required) external returns (uint256);
 
+    function depositNft(address[] calldata nfts_, uint256[][] calldata tokenIds_, address owner_) external;
+
+    function withdrawNft(address[] calldata nfts_, uint256[][] calldata tokenIds_, address owner_) external;
+
     function mintStNft(IStakedNft stNft_, address to_, uint256[] calldata tokenIds_) external;
+
+    function burnStNft(IStakedNft stNft_, address from_, uint256[] calldata tokenIds_) external;
 
     // staking
     function calculateFee(uint256 rewardsAmount_) external view returns (uint256 feeAmount);
@@ -94,8 +100,21 @@ interface IStakeManager {
         uint256[] bakc;
     }
 
+    struct TokenOwner {
+        uint256[] tokenIds;
+        address owner;
+    }
+
+    struct TokenOwnerArgs {
+        TokenOwner bayc;
+        TokenOwner mayc;
+        TokenOwner bakc;
+    }
+
     struct CompoundArgs {
         bool claimCoinPool;
+        TokenOwnerArgs deposit;
+        TokenOwnerArgs withdraw;
         NftArgs claim;
         NftArgs unstake;
         NftArgs stake;

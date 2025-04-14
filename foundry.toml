@@ -4,7 +4,7 @@ out = 'out'
 libs = ['node_modules', 'lib']
 test = 'test'
 cache_path  = 'cache_forge'
-gas_reports = ["BendCoinPool", "BendNftPool", "BendStakeManager", "NftVault", "StBAYC", "LendingMigrator"]
+gas_reports = ["BendCoinPool", "BendNftPool", "BendStakeManager", "NftVault", "StBAYC"]
 
 [fmt]
 line_length = 120

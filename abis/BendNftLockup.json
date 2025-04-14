@@ -18,29 +18,73 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "borrower",
+        "name": "nft",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "tokenIds",
+        "type": "uint256[]"
       },
       {
         "indexed": true,
         "internalType": "address",
-        "name": "nftAsset",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "NftDeposited",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "nft",
         "type": "address"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "nftTokenId",
-        "type": "uint256"
+        "internalType": "uint256[]",
+        "name": "tokenIds",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "NftFinalized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "nft",
+        "type": "address"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "debtAmount",
-        "type": "uint256"
+        "internalType": "uint256[]",
+        "name": "tokenIds",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
       }
     ],
-    "name": "NftMigrated",
+    "name": "NftWithdrawn",
     "type": "event"
   },
   {
@@ -90,12 +134,12 @@
   },
   {
     "inputs": [],
-    "name": "BORROW_SLIPPAGE",
+    "name": "MAX_OP_INTERVAL",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint40",
         "name": "",
-        "type": "uint256"
+        "type": "uint40"
       }
     ],
     "stateMutability": "view",
@@ -103,12 +147,12 @@
   },
   {
     "inputs": [],
-    "name": "PERCENTAGE_FACTOR",
+    "name": "STATUS_INIT",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint8",
         "name": "",
-        "type": "uint256"
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -116,25 +160,12 @@
   },
   {
     "inputs": [],
-    "name": "aaveAddressesProvider",
+    "name": "STATUS_WITHDRAWING",
     "outputs": [
       {
-        "internalType": "contract IAaveLendPoolAddressesProvider",
+        "internalType": "uint8",
         "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "aaveLendPool",
-    "outputs": [
-      {
-        "internalType": "contract IAaveLendPool",
-        "name": "",
-        "type": "address"
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -145,7 +176,7 @@
     "name": "bakc",
     "outputs": [
       {
-        "internalType": "contract IERC721Upgradeable",
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -158,7 +189,7 @@
     "name": "bayc",
     "outputs": [
       {
-        "internalType": "contract IERC721Upgradeable",
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -168,10 +199,10 @@
   },
   {
     "inputs": [],
-    "name": "bendAddressesProvider",
+    "name": "botAdmin",
     "outputs": [
       {
-        "internalType": "contract ILendPoolAddressesProvider",
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -181,23 +212,10 @@
   },
   {
     "inputs": [],
-    "name": "bendLendLoan",
+    "name": "delegationRegistryV2",
     "outputs": [
       {
-        "internalType": "contract ILendPoolLoan",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "bendLendPool",
-    "outputs": [
-      {
-        "internalType": "contract ILendPool",
+        "internalType": "contract IDelegateRegistryV2",
         "name": "",
         "type": "address"
       }
@@ -209,71 +227,81 @@
     "inputs": [
       {
         "internalType": "address[]",
-        "name": "assets",
+        "name": "nfts_",
         "type": "address[]"
       },
       {
-        "internalType": "uint256[]",
-        "name": "amounts",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "premiums",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "address",
-        "name": "initiator",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes",
-        "name": "params",
-        "type": "bytes"
+        "internalType": "uint256[][]",
+        "name": "tokenIds_",
+        "type": "uint256[][]"
       }
     ],
-    "name": "executeOperation",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
+    "name": "deposit",
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "nfts_",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[][]",
+        "name": "tokenIds_",
+        "type": "uint256[][]"
+      },
+      {
         "internalType": "address",
-        "name": "aaveAddressesProvider_",
+        "name": "owner_",
+        "type": "address"
+      }
+    ],
+    "name": "finalize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getBotAdmin",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "nftValut_",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "bendAddressesProvider_",
+        "name": "bayc_",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "nftPool_",
+        "name": "mayc_",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "stBayc_",
+        "name": "bakc_",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "stMayc_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "stBakc_",
+        "name": "delegationRegistryV2_",
         "type": "address"
       }
     ],
@@ -287,7 +315,7 @@
     "name": "mayc",
     "outputs": [
       {
-        "internalType": "contract IERC721Upgradeable",
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -296,29 +324,58 @@
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "nftShadowRights",
+    "outputs": [
       {
-        "internalType": "address[]",
-        "name": "nftAssets",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "nftTokenIds",
-        "type": "uint256[]"
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
       }
     ],
-    "name": "migrate",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "nftTokenDatas",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint40",
+        "name": "lastOpTime",
+        "type": "uint40"
+      },
+      {
+        "internalType": "uint8",
+        "name": "status",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "nftPool",
+    "name": "nftValut",
     "outputs": [
       {
-        "internalType": "contract INftPool",
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -357,7 +414,7 @@
         "type": "bytes4"
       }
     ],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -396,6 +453,45 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "botAdmin_",
+        "type": "address"
+      }
+    ],
+    "name": "setBotAdmin",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "delegationRegistryV2_",
+        "type": "address"
+      }
+    ],
+    "name": "setDelegationRegistryV2",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "nftShadowRights_",
+        "type": "bytes32"
+      }
+    ],
+    "name": "setNftShadowRights",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bool",
         "name": "flag",
         "type": "bool"
@@ -407,45 +503,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "stBakc",
-    "outputs": [
-      {
-        "internalType": "contract IStakedNft",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "stBayc",
-    "outputs": [
-      {
-        "internalType": "contract IStakedNft",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "stMayc",
-    "outputs": [
-      {
-        "internalType": "contract IStakedNft",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -454,6 +511,24 @@
       }
     ],
     "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "nfts_",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[][]",
+        "name": "tokenIds_",
+        "type": "uint256[][]"
+      }
+    ],
+    "name": "withdraw",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

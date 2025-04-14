@@ -15,7 +15,6 @@ import {
   MockBendLendPoolAddressesProvider,
   MockBendLendPool,
   MockBendLendPoolLoan,
-  LendingMigrator,
   NftVault,
   StBAKC,
   StMAYC,
@@ -26,7 +25,6 @@ import {
   BendNftPool,
   MockBendApeCoinV1,
   MockStakeManagerV1,
-  CompoudV1Migrator,
   PoolViewer,
   BendApeCoinStakedVoting,
   MockDelegationRegistryV2,
@@ -86,11 +84,9 @@ export interface Contracts {
   mockBendLendPoolAddressesProvider: MockBendLendPoolAddressesProvider;
   mockBendLendPool: MockBendLendPool;
   mockBendLendPoolLoan: MockBendLendPoolLoan;
-  lendingMigrator: LendingMigrator;
   // v1 staking
   mockCoinPoolV1: MockBendApeCoinV1;
   mockStakeManagerV1: MockStakeManagerV1;
-  compoudV1Migrator: CompoudV1Migrator;
   // v2 lending
   mockAddressProviderV2: MockAddressProviderV2;
   poolViewer: PoolViewer;
@@ -191,15 +187,6 @@ export async function setupEnv(env: Env, contracts: Contracts): Promise<void> {
     contracts.stBakc.address
   );
 
-  await contracts.lendingMigrator.initialize(
-    contracts.mockAaveLendPoolAddressesProvider.address,
-    contracts.mockBendLendPoolAddressesProvider.address,
-    contracts.bendNftPool.address,
-    contracts.stBayc.address,
-    contracts.stMayc.address,
-    contracts.stBakc.address
-  );
-
   await contracts.bendStakeManager.updateRewardsStrategy(contracts.bayc.address, contracts.baycStrategy.address);
   await contracts.bendStakeManager.updateRewardsStrategy(contracts.mayc.address, contracts.maycStrategy.address);
   await contracts.bendStakeManager.updateRewardsStrategy(contracts.bakc.address, contracts.bakcStrategy.address);
@@ -226,13 +213,6 @@ export async function setupEnv(env: Env, contracts: Contracts): Promise<void> {
   await contracts.nftVault.authorise(contracts.bendStakeManager.address, true);
 
   await contracts.nftVault.setDelegationRegistryV2Contract(contracts.mockDelegationRegistryV2.address);
-
-  await contracts.compoudV1Migrator.initialize(
-    contracts.wrapApeCoin.address,
-    contracts.mockStakeManagerV1.address,
-    contracts.mockCoinPoolV1.address,
-    contracts.bendCoinPool.address
-  );
 
   await contracts.bendNftPool.setV2AddressProvider(contracts.mockAddressProviderV2.address);
 }
@@ -304,12 +284,10 @@ export async function setupContracts(): Promise<Contracts> {
   );
   const mockBendLendPool = await deployContract<MockBendLendPool>("MockBendLendPool", []);
   const mockBendLendPoolLoan = await deployContract<MockBendLendPoolLoan>("MockBendLendPoolLoan", []);
-  const lendingMigrator = await deployContract<LendingMigrator>("LendingMigrator", []);
 
   // v1 staking
   const mockCoinPoolV1 = await deployContract<MockBendApeCoinV1>("MockBendApeCoinV1", [wrapApeCoin.address]);
   const mockStakeManagerV1 = await deployContract<MockStakeManagerV1>("MockStakeManagerV1", [wrapApeCoin.address]);
-  const compoudV1Migrator = await deployContract<CompoudV1Migrator>("CompoudV1Migrator", []);
 
   // v2 lending
   const mockAddressProviderV2 = await deployContract<MockAddressProviderV2>("MockAddressProviderV2", []);
@@ -364,10 +342,8 @@ export async function setupContracts(): Promise<Contracts> {
     mockBendLendPoolAddressesProvider,
     mockBendLendPool,
     mockBendLendPoolLoan,
-    lendingMigrator,
     mockCoinPoolV1,
     mockStakeManagerV1,
-    compoudV1Migrator,
     mockAddressProviderV2,
     poolViewer,
     stakedVoting,

@@ -36,9 +36,9 @@ interface INftPool {
 
     function staker() external view returns (IStakeManager);
 
-    function deposit(address[] calldata nfts_, uint256[][] calldata tokenIds_) external;
+    function deposit(address[] calldata nfts_, uint256[][] calldata tokenIds_, address owner_) external;
 
-    function withdraw(address[] calldata nfts_, uint256[][] calldata tokenIds_) external;
+    function withdraw(address[] calldata nfts_, uint256[][] calldata tokenIds_, address owner_) external;
 
     function claim(address[] calldata nfts_, uint256[][] calldata tokenIds_) external;
 

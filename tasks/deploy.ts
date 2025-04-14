@@ -210,33 +210,6 @@ task("deploy:DefaultWithdrawStrategy", "Deploy DefaultWithdrawStrategy").setActi
   await deployContract("DefaultWithdrawStrategy", [apeStaking, nftVault, coinPool, stakeManager], true);
 });
 
-task("deploy:LendingMigrator", "Deploy LendingMigrator").setAction(async (_, { network, run }) => {
-  await run("set-DRE");
-  await run("compile");
-
-  const aaveProvider = getParams(AAVE_ADDRESS_PROVIDER, network.name);
-  const bendProvider = getParams(BEND_ADDRESS_PROVIDER, network.name);
-
-  const nftPool = await getContractAddressFromDB("BendNftPool");
-  const stBayc = await getContractAddressFromDB("StBAYC");
-  const stMayc = await getContractAddressFromDB("StMAYC");
-  const stBakc = await getContractAddressFromDB("StBAKC");
-
-  await deployProxyContract("LendingMigrator", [aaveProvider, bendProvider, nftPool, stBayc, stMayc, stBakc], true);
-});
-
-task("deploy:CompoudV1Migrator", "Deploy CompoudV1Migrator").setAction(async (_, { network, run }) => {
-  await run("set-DRE");
-  await run("compile");
-
-  const apeCoin = getParams(WAPE_COIN, network.name);
-  const stakeManagerV1 = getParams(STAKER_MANAGER_V1, network.name);
-  const coinPoolV1 = getParams(COIN_POOL_V1, network.name);
-  const coinPoolV2 = await getContractAddressFromDB("BendCoinPool");
-
-  await deployProxyContract("CompoudV1Migrator", [apeCoin, stakeManagerV1, coinPoolV1, coinPoolV2], true);
-});
-
 task("deploy:PoolViewer", "Deploy PoolViewer").setAction(async (_, { network, run }) => {
   await run("set-DRE");
   await run("compile");

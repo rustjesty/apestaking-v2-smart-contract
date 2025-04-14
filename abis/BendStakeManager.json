@@ -176,6 +176,29 @@
   {
     "inputs": [
       {
+        "internalType": "contract IStakedNft",
+        "name": "stNft_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "from_",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "tokenIds_",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "burnStNft",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "rewardsAmount_",
         "type": "uint256"
@@ -257,6 +280,122 @@
           {
             "components": [
               {
+                "components": [
+                  {
+                    "internalType": "uint256[]",
+                    "name": "tokenIds",
+                    "type": "uint256[]"
+                  },
+                  {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                  }
+                ],
+                "internalType": "struct IStakeManager.TokenOwner",
+                "name": "bayc",
+                "type": "tuple"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "uint256[]",
+                    "name": "tokenIds",
+                    "type": "uint256[]"
+                  },
+                  {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                  }
+                ],
+                "internalType": "struct IStakeManager.TokenOwner",
+                "name": "mayc",
+                "type": "tuple"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "uint256[]",
+                    "name": "tokenIds",
+                    "type": "uint256[]"
+                  },
+                  {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                  }
+                ],
+                "internalType": "struct IStakeManager.TokenOwner",
+                "name": "bakc",
+                "type": "tuple"
+              }
+            ],
+            "internalType": "struct IStakeManager.TokenOwnerArgs",
+            "name": "deposit",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "components": [
+                  {
+                    "internalType": "uint256[]",
+                    "name": "tokenIds",
+                    "type": "uint256[]"
+                  },
+                  {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                  }
+                ],
+                "internalType": "struct IStakeManager.TokenOwner",
+                "name": "bayc",
+                "type": "tuple"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "uint256[]",
+                    "name": "tokenIds",
+                    "type": "uint256[]"
+                  },
+                  {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                  }
+                ],
+                "internalType": "struct IStakeManager.TokenOwner",
+                "name": "mayc",
+                "type": "tuple"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "uint256[]",
+                    "name": "tokenIds",
+                    "type": "uint256[]"
+                  },
+                  {
+                    "internalType": "address",
+                    "name": "owner",
+                    "type": "address"
+                  }
+                ],
+                "internalType": "struct IStakeManager.TokenOwner",
+                "name": "bakc",
+                "type": "tuple"
+              }
+            ],
+            "internalType": "struct IStakeManager.TokenOwnerArgs",
+            "name": "withdraw",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
                 "internalType": "uint256[]",
                 "name": "bayc",
                 "type": "uint256[]"
@@ -332,6 +471,29 @@
       }
     ],
     "name": "compound",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "nfts_",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[][]",
+        "name": "tokenIds_",
+        "type": "uint256[][]"
+      },
+      {
+        "internalType": "address",
+        "name": "owner_",
+        "type": "address"
+      }
+    ],
+    "name": "depositNft",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -445,40 +607,6 @@
     "name": "mintStNft",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes",
-        "name": "",
-        "type": "bytes"
-      }
-    ],
-    "name": "onERC721Received",
-    "outputs": [
-      {
-        "internalType": "bytes4",
-        "name": "",
-        "type": "bytes4"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -881,6 +1009,29 @@
         "type": "uint256"
       }
     ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "nfts_",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[][]",
+        "name": "tokenIds_",
+        "type": "uint256[][]"
+      },
+      {
+        "internalType": "address",
+        "name": "owner_",
+        "type": "address"
+      }
+    ],
+    "name": "withdrawNft",
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },

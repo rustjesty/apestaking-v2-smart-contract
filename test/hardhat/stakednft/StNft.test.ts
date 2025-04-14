@@ -50,6 +50,11 @@ export function makeStNftTest(name: string, getNfts: (contracts: Contracts) => [
     it("mint", async () => {
       expect(await stNft.totalStaked(staker.address)).eq(0);
       expect(await stNft.totalStaked(stNftOwner.address)).eq(0);
+
+      for (const id of tokenIds) {
+        await nft.connect(staker).transferFrom(staker.address, contracts.nftVault.address, id);
+      }
+
       await expect(stNft.connect(staker).mint(stNftOwner.address, tokenIds)).not.reverted;
 
       expect(await stNft.totalStaked(staker.address)).eq(tokenIds.length);
@@ -118,14 +123,14 @@ export function makeStNftTest(name: string, getNfts: (contracts: Contracts) => [
       expect(await stNft.totalStaked(staker.address)).eq(tokenIds.length);
       expect(await stNft.totalStaked(stNftOwner.address)).eq(0);
 
-      await expect(stNft.connect(stNftOwner).burn(tokenIds)).not.reverted;
+      await expect(stNft.connect(staker).burn(stNftOwner.address, tokenIds)).not.reverted;
 
       expect(await stNft.totalStaked(staker.address)).eq(0);
       expect(await stNft.totalStaked(stNftOwner.address)).eq(0);
 
       for (const [i, id] of tokenIds.entries()) {
         expect(await contracts.nftVault.stakerOf(nft.address, id)).eq(constants.AddressZero);
-        expect(await nft.ownerOf(id)).eq(stNftOwner.address);
+        expect(await nft.ownerOf(id)).eq(contracts.nftVault.address);
         await expect(stNft.ownerOf(id)).revertedWith("ERC721: invalid token ID");
         await expect(stNft.tokenOfStakerByIndex(staker.address, i)).revertedWith("stNft: staker index out of bounds");
       }
