@@ -46,6 +46,30 @@ const config: HardhatUserConfig = {
         accountsBalance: "100000000000000000000000000", // 100000K ETH
       },
     },
+    sepolia: {
+      // gasPrice: 1 * GWEI,
+      url: NETWORKS_RPC_URL[Network.sepolia],
+      accounts: PRIVATE_KEY
+        ? [PRIVATE_KEY]
+        : {
+            mnemonic: MNEMONIC,
+            path: MNEMONIC_PATH,
+            initialIndex: 0,
+            count: 20,
+          },
+    },
+    mainnet: {
+      // gasPrice: 1 * GWEI,
+      url: NETWORKS_RPC_URL[Network.mainnet],
+      accounts: PRIVATE_KEY
+        ? [PRIVATE_KEY]
+        : {
+            mnemonic: MNEMONIC,
+            path: MNEMONIC_PATH,
+            initialIndex: 0,
+            count: 20,
+          },
+    },
     curtis: {
       // gasPrice: 1 * GWEI,
       url: NETWORKS_RPC_URL[Network.curtis],
@@ -78,6 +102,8 @@ const config: HardhatUserConfig = {
   // },
   etherscan: {
     apiKey: {
+      sepolia: ETHERSCAN_KEY,
+      mainnet: ETHERSCAN_KEY,
       curtis: ETHERSCAN_KEY,
       apechain: ETHERSCAN_KEY,
     },

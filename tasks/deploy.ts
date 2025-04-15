@@ -21,6 +21,7 @@ import {
   MAYC,
   MAYC_REWARDS_SHARE_RATIO,
   STAKER_MANAGER_V1,
+  DELEAGATE_CASH_V2,
 } from "./config";
 import {
   deployContract,
@@ -60,12 +61,9 @@ task("deploy:mock:ApeCoinStaking", "Deploy Mock ApeCoinStaking").setAction(async
 
   // const beacon = await deployContract("MockBeacon", [], true);
   // console.log("Beacon at:", beacon.address);
+  const beacon = getParams(BEACON, network.name);
 
-  const apeStaking = await deployContract(
-    "ApeCoinStaking",
-    ["0x554309B0888c37139D6E31aBAe30B4502915B5DB", bayc, mayc, bakc],
-    true
-  );
+  const apeStaking = await deployContract("ApeCoinStaking", [beacon, bayc, mayc, bakc], true);
   console.log("ApeCoinStaking at:", apeStaking.address);
 });
 
@@ -209,6 +207,23 @@ task("deploy:DefaultWithdrawStrategy", "Deploy DefaultWithdrawStrategy").setActi
 
   await deployContract("DefaultWithdrawStrategy", [apeStaking, nftVault, coinPool, stakeManager], true);
 });
+
+task("deploy:BendNftLockup", "Deploy BendNftLockup")
+  .addParam("nftVault", "The nftValut contract address")
+  .setAction(async ({ nftVault }, { network, run }) => {
+    await run("set-DRE");
+    await run("compile");
+
+    // This task should only be used for ETH mainnet or sepolia
+    // The nftVault parameter must contract address on the ApeChain mainnet or curtis
+
+    const bayc = getParams(BAYC, network.name);
+    const mayc = getParams(MAYC, network.name);
+    const bakc = getParams(BAKC, network.name);
+    const delegationRegistryV2 = getParams(DELEAGATE_CASH_V2, network.name);
+
+    await deployProxyContract("BendNftLockup", [nftVault, bayc, mayc, bakc, delegationRegistryV2], true);
+  });
 
 task("deploy:PoolViewer", "Deploy PoolViewer").setAction(async (_, { network, run }) => {
   await run("set-DRE");

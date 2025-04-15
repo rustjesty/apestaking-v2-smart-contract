@@ -62,5 +62,9 @@
   "BendApeCoinStakedVoting": {
     "address": "0xD102205D4Fa0449BC2CeBa7b7C741Ab363409cCa",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
+  },
+  "BendNftLockup": {
+    "address": "0x1756C5B489cBE264C10AbfFf019C370d3416A498",
+    "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   }
 }

@@ -8,71 +8,71 @@
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "MockBAYC": {
-    "address": "0xE15A78992dd4a9d6833eA7C9643650d3b0a2eD2B",
+    "address": "0xB7fB08979d639e244F15A8Eb59551c0d83F1c114",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "MockMAYC": {
-    "address": "0x28cCcd47Aa3FFb42D77e395Fba7cdAcCeA884d5A",
+    "address": "0xA10D91F63AbCF82D8CC0637c8a9a6148E5D1bd64",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "MockBAKC": {
-    "address": "0xD0ff8ae7E3D9591605505D3db9C33b96c4809CDC",
+    "address": "0x0f72Dae580E04AdAe973cD12C4f8FdCE8d23cAC6",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "ApeCoinStaking": {
-    "address": "0x3BD0A71D39E67fc49D5A6645550f2bc95F5cb398",
+    "address": "0x830e8e47591F9eB047efde3b2A8E2F13e9235EC6",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "VaultLogic": {
-    "address": "0x3BE172e31dDefF40152ac57d0F9ECB1C46a39162",
+    "address": "0x0EBbD387769f012a3Bbf65eaCb4Ec3db3c7693f6",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "NftVault": {
-    "address": "0xdD4d936bAd4a4A89F850D1AF7c98beEA988c07c5",
+    "address": "0x55C44d8dDCEaceD2d9a40a1e68Ca3F8bE5E96b91",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "StBAYC": {
-    "address": "0x5e4cF53c3337199Fce53B67E641a74E11fCcE5FA",
+    "address": "0xF143144Fb2703C8aeefD0c4D06d29F5Bb0a9C60A",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "StMAYC": {
-    "address": "0x194E1ec01df347783482d6Bdc9D65D70C9D87961",
+    "address": "0x3CF52C9ce29a1df2adCd0Ce657BbBBB63A3f9D01",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "StBAKC": {
-    "address": "0x248E2D3f5Decf6f7159EcC4C65d5eFbBDd9Be433",
+    "address": "0x8f91Da151E9FfeaA410419256c30f4608AD85Dc3",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "BendCoinPool": {
-    "address": "0xbeD1e8B430FD512b82A18cb121a8442F3889E505",
+    "address": "0x19Fc1F11e1BEA5317ce54d97bbf5675a38e2F4a3",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "BendNftPool": {
-    "address": "0x317e19Fe3DB508f1A45421379FBbd7564d0259c0",
+    "address": "0xE8e43e27b32642F3FD44F9d46239fE157Ef160E7",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "BendStakeManager": {
-    "address": "0x578bc56a145A3464Adc44635C23501653138c946",
+    "address": "0x1cba0A3e18be7f210713c9AC9FE17955359cC99B",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "BaycRewardsStrategy": {
-    "address": "0x554c988207E0D540bC71e3325Eebc6004c34c56d",
+    "address": "0x553Dc0d3beB4cFAB1215eD6afc576f3bd8BD5cc5",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "MaycRewardsStrategy": {
-    "address": "0xa9Cd16Bfdae69f160d86db142c5b3A9C52C67315",
+    "address": "0x5703d8325485Ef2e1800322B7a322BCfa147B8D2",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "BakcRewardsStrategy": {
-    "address": "0x1465bD7Bd5D018454b9E731811bf6A2c7cDC4CB4",
+    "address": "0x6D48c2B1fff6868446d893e4bCAe745e33423e7C",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "DefaultWithdrawStrategy": {
-    "address": "0x316d4D69e5957e6A99370b6162bd8b077633c37A",
+    "address": "0x63b873BEcC13649C61Bb87e9ccf9248023eE9572",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "PoolViewer": {
-    "address": "0x5E3FdFe56c914Faf364e9CBa9bF6Bd94A25fFe89",
+    "address": "0x11fA8dAd5FB8c063c7D74c3245225cd5bb4856E3",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   }
 }

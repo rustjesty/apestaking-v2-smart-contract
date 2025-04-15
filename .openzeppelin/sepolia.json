@@ -49,6 +49,16 @@
       "address": "0x60C7eb6362D4fD6dFa53f6610784924eFaA1d178",
       "txHash": "0xa394192c1abbf12fe71ea860191afb4f44d5661d883a90d58baefeb5d2e6a04f",
       "kind": "transparent"
+    },
+    {
+      "address": "0x65AeBD521391103002A25a54770aBfC235ffA1d7",
+      "txHash": "0x4ce0cd38e9fe8063b29bacc14bc3ec4d80247b9ecf1be0cec08e83dbf75ef496",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1756C5B489cBE264C10AbfFf019C370d3416A498",
+      "txHash": "0x9f288650a0529502572963bc1bb3b290fca27efe169b63c5c50e8ecc364e59f8",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -2958,6 +2968,222 @@
           "t_uint256": {
             "label": "uint256",
             "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "c3f93b145eaa8cb4604115705134b5dbb9444875442a8874e0d9a9ec1ef950c1": {
+      "address": "0x02ee4c95bE6bf504281617164B169A39c6ecd331",
+      "txHash": "0xb143c58ff88fb74287ffd3e605bf97dfdf6bad0ffbb525c03fead57528581466",
+      "layout": {
+        "solcVersion": "0.8.18",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:80"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_bool",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:116"
+          },
+          {
+            "label": "botAdmin",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_address",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:21"
+          },
+          {
+            "label": "nftValut",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_address",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:22"
+          },
+          {
+            "label": "delegationRegistryV2",
+            "offset": 0,
+            "slot": "203",
+            "type": "t_contract(IDelegateRegistryV2)19412",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:23"
+          },
+          {
+            "label": "nftShadowRights",
+            "offset": 0,
+            "slot": "204",
+            "type": "t_bytes32",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:24"
+          },
+          {
+            "label": "bayc",
+            "offset": 0,
+            "slot": "205",
+            "type": "t_address",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:25"
+          },
+          {
+            "label": "mayc",
+            "offset": 0,
+            "slot": "206",
+            "type": "t_address",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:26"
+          },
+          {
+            "label": "bakc",
+            "offset": 0,
+            "slot": "207",
+            "type": "t_address",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:27"
+          },
+          {
+            "label": "nftTokenDatas",
+            "offset": 0,
+            "slot": "208",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(TokenData)13635_storage))",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:38"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IDelegateRegistryV2)19412": {
+            "label": "contract IDelegateRegistryV2",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(TokenData)13635_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct BendNftLockup.TokenData))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(TokenData)13635_storage)": {
+            "label": "mapping(uint256 => struct BendNftLockup.TokenData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(TokenData)13635_storage": {
+            "label": "struct BendNftLockup.TokenData",
+            "members": [
+              {
+                "label": "owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "lastOpTime",
+                "type": "t_uint40",
+                "offset": 20,
+                "slot": "0"
+              },
+              {
+                "label": "status",
+                "type": "t_uint8",
+                "offset": 25,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint40": {
+            "label": "uint40",
+            "numberOfBytes": "5"
           },
           "t_uint8": {
             "label": "uint8",

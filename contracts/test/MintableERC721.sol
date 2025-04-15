@@ -12,9 +12,10 @@ import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/
 contract MintableERC721 is ERC721Enumerable, Ownable {
     string public baseURI;
     mapping(address => uint256) public mintCounts;
-    uint256 maxSupply;
-    uint256 maxTokenId;
+    uint256 public maxSupply;
+    uint256 public maxTokenId;
     mapping(uint256 => bool) public lockedTokens;
+    bool public disableTransfer;
 
     constructor(string memory name, string memory symbol) Ownable() ERC721(name, symbol) {
         maxSupply = 10000;
@@ -38,12 +39,18 @@ contract MintableERC721 is ERC721Enumerable, Ownable {
         return true;
     }
 
-    function privateMint(uint256 tokenId) public onlyOwner returns (bool) {
+    function privateMint(address to, uint256 tokenId) public onlyOwner returns (bool) {
         require(tokenId <= maxTokenId, "exceed max token id");
         require(totalSupply() + 1 <= maxSupply, "exceed max supply");
 
-        _mint(_msgSender(), tokenId);
+        _mint(to, tokenId);
         return true;
+    }
+
+    function privateBurn(uint256 tokenId) public onlyOwner {
+        require(_exists(tokenId), "token does not exist");
+
+        _burn(tokenId);
     }
 
     function _baseURI() internal view virtual override returns (string memory) {
@@ -84,7 +91,25 @@ contract MintableERC721 is ERC721Enumerable, Ownable {
         return lockedTokens[tokenId];
     }
 
-    function setLocked(uint256 tokenId, bool flag) public {
+    function setLocked(uint256 tokenId, bool flag) public onlyOwner {
         lockedTokens[tokenId] = flag;
+    }
+
+    function setDisableTransfer(bool flag) public onlyOwner {
+        disableTransfer = flag;
+    }
+
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 firstTokenId,
+        uint256 batchSize
+    ) internal virtual override {
+        from;
+        to;
+        firstTokenId;
+        batchSize;
+
+        require(!disableTransfer, "transfer disabled");
     }
 }
