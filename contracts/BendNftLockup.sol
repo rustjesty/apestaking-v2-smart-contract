@@ -26,7 +26,7 @@ contract BendNftLockup is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausab
     address public mayc;
     address public bakc;
 
-    uint40 public constant MAX_OP_INTERVAL = 1 hours;
+    uint40 public constant DEFAULT_OP_INTERVAL = 1 hours;
     uint8 public constant STATUS_INIT = 0;
     uint8 public constant STATUS_WITHDRAWING = 1;
 
@@ -36,6 +36,9 @@ contract BendNftLockup is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausab
         uint8 status;
     }
     mapping(address => mapping(uint256 => TokenData)) public nftTokenDatas;
+    uint40 public maxOpInterval;
+
+    // !!! Append new variable before this line, because this contract is upgradable !!!
 
     modifier onlyBot() {
         require(msg.sender == botAdmin, "BendNftLockup: caller not bot admin");
@@ -69,6 +72,7 @@ contract BendNftLockup is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausab
         nftValut = nftValut_; // It's a vault address on ApeChain, not ETH Mainnet
         nftShadowRights = 0x000000000000000000000000000000000000000000000000000000ffffffffff;
         delegationRegistryV2 = IDelegateRegistryV2(delegationRegistryV2_);
+        maxOpInterval = DEFAULT_OP_INTERVAL;
 
         bayc = bayc_;
         mayc = mayc_;
@@ -94,7 +98,7 @@ contract BendNftLockup is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausab
                 TokenData storage tokenData = nftTokenDatas[nft_][tokenId_];
                 require(tokenData.status == STATUS_INIT, "BendNftLockup: status not init");
                 require(
-                    uint40(block.timestamp) > (tokenData.lastOpTime + MAX_OP_INTERVAL),
+                    uint40(block.timestamp) > (tokenData.lastOpTime + maxOpInterval),
                     "BendNftLockup: interval not enough"
                 );
 
@@ -131,7 +135,7 @@ contract BendNftLockup is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausab
                 require(tokenData.owner == msg.sender, "BendNftLockup: caller not owner");
                 require(tokenData.status == STATUS_INIT, "BendNftLockup: status not init");
                 require(
-                    uint40(block.timestamp) > (tokenData.lastOpTime + MAX_OP_INTERVAL),
+                    uint40(block.timestamp) > (tokenData.lastOpTime + maxOpInterval),
                     "BendNftLockup: interval not enough"
                 );
 
@@ -196,6 +200,10 @@ contract BendNftLockup is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausab
 
     function setNftShadowRights(bytes32 nftShadowRights_) public onlyOwner {
         nftShadowRights = nftShadowRights_;
+    }
+
+    function setMaxOpInterval(uint40 maxOpInterval_) public onlyOwner {
+        maxOpInterval = maxOpInterval_;
     }
 
     function setPause(bool flag) public onlyOwner {

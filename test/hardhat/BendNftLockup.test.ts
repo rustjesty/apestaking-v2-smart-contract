@@ -52,6 +52,9 @@ makeSuite("BendNftLockup", (contracts: Contracts, env: Env, snapshots: Snapshots
     await expect(contracts.bendNftLockup.connect(owner).setNftShadowRights(zeroBytes32)).revertedWith(
       "Ownable: caller is not the owner"
     );
+    await expect(contracts.bendNftLockup.connect(owner).setMaxOpInterval(100)).revertedWith(
+      "Ownable: caller is not the owner"
+    );
     await expect(contracts.bendNftLockup.connect(owner).setPause(true)).revertedWith(
       "Ownable: caller is not the owner"
     );

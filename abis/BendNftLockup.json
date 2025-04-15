@@ -134,7 +134,7 @@
   },
   {
     "inputs": [],
-    "name": "MAX_OP_INTERVAL",
+    "name": "DEFAULT_OP_INTERVAL",
     "outputs": [
       {
         "internalType": "uint40",
@@ -353,6 +353,19 @@
   },
   {
     "inputs": [],
+    "name": "maxOpInterval",
+    "outputs": [
+      {
+        "internalType": "uint40",
+        "name": "",
+        "type": "uint40"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "mayc",
     "outputs": [
       {
@@ -513,6 +526,19 @@
       }
     ],
     "name": "setDelegationRegistryV2",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint40",
+        "name": "maxOpInterval_",
+        "type": "uint40"
+      }
+    ],
+    "name": "setMaxOpInterval",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

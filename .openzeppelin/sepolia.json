@@ -3075,7 +3075,7 @@
             "label": "delegationRegistryV2",
             "offset": 0,
             "slot": "203",
-            "type": "t_contract(IDelegateRegistryV2)19412",
+            "type": "t_contract(IDelegateRegistryV2)1890",
             "contract": "BendNftLockup",
             "src": "contracts/BendNftLockup.sol:23"
           },
@@ -3115,7 +3115,7 @@
             "label": "nftTokenDatas",
             "offset": 0,
             "slot": "208",
-            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(TokenData)13635_storage))",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(TokenData)1031_storage))",
             "contract": "BendNftLockup",
             "src": "contracts/BendNftLockup.sol:38"
           }
@@ -3141,19 +3141,243 @@
             "label": "bytes32",
             "numberOfBytes": "32"
           },
-          "t_contract(IDelegateRegistryV2)19412": {
+          "t_contract(IDelegateRegistryV2)1890": {
             "label": "contract IDelegateRegistryV2",
             "numberOfBytes": "20"
           },
-          "t_mapping(t_address,t_mapping(t_uint256,t_struct(TokenData)13635_storage))": {
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(TokenData)1031_storage))": {
             "label": "mapping(address => mapping(uint256 => struct BendNftLockup.TokenData))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(TokenData)13635_storage)": {
+          "t_mapping(t_uint256,t_struct(TokenData)1031_storage)": {
             "label": "mapping(uint256 => struct BendNftLockup.TokenData)",
             "numberOfBytes": "32"
           },
-          "t_struct(TokenData)13635_storage": {
+          "t_struct(TokenData)1031_storage": {
+            "label": "struct BendNftLockup.TokenData",
+            "members": [
+              {
+                "label": "owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "lastOpTime",
+                "type": "t_uint40",
+                "offset": 20,
+                "slot": "0"
+              },
+              {
+                "label": "status",
+                "type": "t_uint8",
+                "offset": 25,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint40": {
+            "label": "uint40",
+            "numberOfBytes": "5"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "260700fa67874be321207073a6acae930af66bab14c12a87ad6ca84c0898b367": {
+      "address": "0x5A28AF15B675589A3A774332879992a9A1837183",
+      "txHash": "0x89368c650e5c4e0931896d76f7ae92b28210dd0b5040b0692c3d4094be05a9ba",
+      "layout": {
+        "solcVersion": "0.8.18",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:80"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_bool",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:116"
+          },
+          {
+            "label": "botAdmin",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_address",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:21"
+          },
+          {
+            "label": "nftValut",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_address",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:22"
+          },
+          {
+            "label": "delegationRegistryV2",
+            "offset": 0,
+            "slot": "203",
+            "type": "t_contract(IDelegateRegistryV2)1908",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:23"
+          },
+          {
+            "label": "nftShadowRights",
+            "offset": 0,
+            "slot": "204",
+            "type": "t_bytes32",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:24"
+          },
+          {
+            "label": "bayc",
+            "offset": 0,
+            "slot": "205",
+            "type": "t_address",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:25"
+          },
+          {
+            "label": "mayc",
+            "offset": 0,
+            "slot": "206",
+            "type": "t_address",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:26"
+          },
+          {
+            "label": "bakc",
+            "offset": 0,
+            "slot": "207",
+            "type": "t_address",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:27"
+          },
+          {
+            "label": "nftTokenDatas",
+            "offset": 0,
+            "slot": "208",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(TokenData)1031_storage))",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:38"
+          },
+          {
+            "label": "maxOpInterval",
+            "offset": 0,
+            "slot": "209",
+            "type": "t_uint40",
+            "contract": "BendNftLockup",
+            "src": "contracts/BendNftLockup.sol:39"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IDelegateRegistryV2)1908": {
+            "label": "contract IDelegateRegistryV2",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(TokenData)1031_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct BendNftLockup.TokenData))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(TokenData)1031_storage)": {
+            "label": "mapping(uint256 => struct BendNftLockup.TokenData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(TokenData)1031_storage": {
             "label": "struct BendNftLockup.TokenData",
             "members": [
               {
