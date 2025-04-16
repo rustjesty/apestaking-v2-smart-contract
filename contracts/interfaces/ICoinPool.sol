@@ -20,6 +20,8 @@ interface ICoinPool is IERC4626Upgradeable {
 
     function redeemSelf(uint256 shares) external returns (uint256);
 
+    function redeemNative(uint256 shares, address receiver, address owner) external returns (uint256);
+
     function pendingApeCoin() external view returns (uint256);
 
     function assetBalanceOf(address account_) external view returns (uint256);

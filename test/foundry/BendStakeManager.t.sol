@@ -105,6 +105,8 @@ contract BendStakeManagerTest is SetupHelper {
         assertGt(rewardsAmount, 0, "rewards should greater than 0");
         vm.stopPrank();
 
+        uint256 balanceBeforeUnstake = testUser.balance;
+
         // unstake all nfts
         vm.startPrank(botAdmin);
         IStakeManager.CompoundArgs memory compoundArgs3;
@@ -120,8 +122,8 @@ contract BendStakeManagerTest is SetupHelper {
         stakeManager.compound(compoundArgs4);
         vm.stopPrank();
 
-        uint256 balanceAmount = mockWAPE.balanceOf(testUser);
-        assertEq(balanceAmount, rewardsAmount, "balance not match rewards");
+        uint256 balanceAmount = testUser.balance;
+        assertEq(balanceAmount, balanceBeforeUnstake + rewardsAmount, "balance not match rewards");
     }
 
     function test_async_StakeBAYC() public {

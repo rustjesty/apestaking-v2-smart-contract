@@ -14,6 +14,7 @@ import {INftPool, IStakedNft, IApeCoinStaking} from "./interfaces/INftPool.sol";
 import {ICoinPool} from "./interfaces/ICoinPool.sol";
 import {IBNFTRegistry} from "./interfaces/IBNFTRegistry.sol";
 import {IAddressProviderV2, IPoolLensV2} from "./interfaces/IBendV2Interfaces.sol";
+import {IWAPE} from "./interfaces/IWAPE.sol";
 
 contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -216,7 +217,7 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
         }
 
         if (totalClaimableShares > 0) {
-            coinPool.redeem(totalClaimableShares, receiver_, address(this));
+            coinPool.redeemNative(totalClaimableShares, receiver_, address(this));
         }
     }
 

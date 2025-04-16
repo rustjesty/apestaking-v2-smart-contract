@@ -250,16 +250,19 @@ makeSuite("BendNftPool", (contracts: Contracts, env: Env, snapshots: Snapshots) 
   const expectClaim = async (nft: string, tokenIds: number[]) => {
     const claimable = await contracts.bendNftPool.claimable([nft], [tokenIds]);
     const pendingApeCoin = (await contracts.bendNftPool.getPoolStateUI(nft)).pendingApeCoin;
+    console.log("expectClaim:", nft, claimable.toString(), pendingApeCoin.toString());
     const bacApeChanged = await contracts.bendCoinPool.convertToShares(pendingApeCoin.sub(claimable));
+
+    console.log("expectClaim:before:getBalance", (await owner.getBalance()).toString());
+
     const tx = contracts.bendNftPool.connect(owner).claim([nft], [tokenIds]);
     await expect(tx)
-      .changeTokenBalances(
-        contracts.wrapApeCoin,
-        [owner.address, contracts.bendNftPool.address],
-        [claimable, constants.Zero.sub(pendingApeCoin)]
-      )
+      .changeEtherBalance(owner.address, claimable)
+      .changeTokenBalances(contracts.wrapApeCoin, [contracts.bendNftPool.address], [constants.Zero.sub(pendingApeCoin)])
       .changeTokenBalance(contracts.bendCoinPool, contracts.bendNftPool.address, bacApeChanged);
     expectIndexChanged((await tx).blockNumber || 0, pendingApeCoin, nft);
+
+    console.log("expectClaim:after:getBalance", (await owner.getBalance()).toString());
   };
 
   it("claim", async () => {
@@ -309,11 +312,8 @@ makeSuite("BendNftPool", (contracts: Contracts, env: Env, snapshots: Snapshots) 
         [baycTokenIds, maycTokenIds, bakcTokenIds]
       );
     await expect(tx)
-      .changeTokenBalances(
-        contracts.wrapApeCoin,
-        [owner.address, contracts.bendNftPool.address],
-        [claimable, constants.Zero.sub(pendingApeCoin)]
-      )
+      .changeEtherBalance(owner.address, claimable)
+      .changeTokenBalances(contracts.wrapApeCoin, [contracts.bendNftPool.address], [constants.Zero.sub(pendingApeCoin)])
       .changeTokenBalance(contracts.bendCoinPool, contracts.bendNftPool.address, bacApeChanged);
   });
 
@@ -349,17 +349,22 @@ makeSuite("BendNftPool", (contracts: Contracts, env: Env, snapshots: Snapshots) 
     const nft = await getContract<MintableERC721>("MintableERC721", await stNft.underlyingAsset());
     const poolState = await contracts.bendNftPool.getPoolStateUI(nft.address);
     const claimable = await contracts.bendNftPool.claimable([nft.address], [tokenIds]);
+    console.log("expectWithdraw:", nft.address, claimable.toString());
     const bacApeChanged = await contracts.bendCoinPool.convertToShares(poolState.pendingApeCoin.sub(claimable));
 
+    console.log("expectWithdraw:before:getBalance", (await owner.getBalance()).toString());
     const tx = contracts.bendNftPool.connect(stakeManagerSigner).withdraw([nft.address], [tokenIds], owner.address);
     await expect(tx)
+      .changeEtherBalance(owner.address, claimable)
       .changeTokenBalances(
         contracts.wrapApeCoin,
-        [owner.address, contracts.bendNftPool.address],
-        [claimable, constants.Zero.sub(poolState.pendingApeCoin)]
+        [contracts.bendNftPool.address],
+        [constants.Zero.sub(poolState.pendingApeCoin)]
       )
       .changeTokenBalance(contracts.bendCoinPool, contracts.bendNftPool.address, bacApeChanged);
     expectIndexChanged((await tx).blockNumber || 0, poolState.pendingApeCoin, nft.address);
+
+    console.log("expectWithdraw:after:getBalance", (await owner.getBalance()).toString());
 
     for (const id of tokenIds) {
       await expect(stNft.ownerOf(id)).revertedWith("ERC721: invalid token ID");

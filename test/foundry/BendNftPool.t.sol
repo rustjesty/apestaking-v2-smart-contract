@@ -29,6 +29,9 @@ contract BendNftPoolTest is SetupHelper {
         vm.prank(address(stakeManager));
         nftPool.deposit(nfts, tokenIds, address(testUser));
 
+        // make some rewards
+        advanceTimeAndBlock(12 hours, 100);
+
         vm.prank(address(testUser));
         nftPool.claim(nfts, tokenIds);
 
@@ -67,6 +70,9 @@ contract BendNftPoolTest is SetupHelper {
 
         vm.prank(address(stakeManager));
         nftPool.deposit(nfts, tokenIds, address(testUser));
+
+        // make some rewards
+        advanceTimeAndBlock(12 hours, 100);
 
         vm.prank(address(testUser));
         nftPool.claim(nfts, tokenIds);

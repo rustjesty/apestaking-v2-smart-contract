@@ -95,6 +95,16 @@ contract BendCoinPool is
         return redeem(shares, msg.sender, msg.sender);
     }
 
+    function redeemNative(uint256 shares, address receiver, address owner) public override returns (uint256) {
+        uint256 assets = redeem(shares, address(this), owner);
+
+        IWAPE(address(wrapApeCoin)).withdraw(assets);
+        (bool success, ) = receiver.call{value: assets}("");
+        if (!success) revert("BendCoinPool: NativeTransferFailed");
+
+        return assets;
+    }
+
     function _withdraw(
         address caller,
         address receiver,
