@@ -334,7 +334,10 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
                 IERC20Upgradeable(address(_vaultStorage.wrapApeCoin)).transfer(recipient_, deltaBalance);
             }
 
-            // in sync case, all funds and gas fee never in pending
+            // maybe some tokens in async case, some funds and gas fee in pending
+            if ((principal + rewards) > deltaBalance) {
+                _vaultStorage.totalPendingFunds += ((principal + rewards) - deltaBalance);
+            }
         } else {
             // in async case, all funds and gas fee are in pending
             _vaultStorage.totalPendingFunds += (principal + rewards);
@@ -394,7 +397,10 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
                 IERC20Upgradeable(address(_vaultStorage.wrapApeCoin)).transfer(recipient_, deltaBalance);
             }
 
-            // in async case, all funds and gas fee never in pending
+            // maybe some tokens in async case, some funds and gas fee in pending
+            if (rewards > deltaBalance) {
+                _vaultStorage.totalPendingFunds += (rewards - deltaBalance);
+            }
         } else {
             // in async case, all funds and gas fee are in pending
             _vaultStorage.totalPendingFunds += (rewards);
