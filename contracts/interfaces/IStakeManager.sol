@@ -23,10 +23,6 @@ interface IStakeManager {
 
     function totalPendingRewards() external view returns (uint256);
 
-    function totalRefund() external view returns (uint256 principal, uint256 reward);
-
-    function refundOf(address nft_) external view returns (uint256 principal, uint256 reward);
-
     function stakedApeCoin(uint256 poolId_) external view returns (uint256);
 
     function pendingRewards(uint256 poolId_) external view returns (uint256);
@@ -66,12 +62,6 @@ interface IStakeManager {
     // staking
     function calculateFee(uint256 rewardsAmount_) external view returns (uint256 feeAmount);
 
-    function stakeApeCoin(uint256 amount_) external;
-
-    function unstakeApeCoin(uint256 amount_) external;
-
-    function claimApeCoin() external;
-
     function stakeBayc(uint256[] calldata tokenIds_) external;
 
     function unstakeBayc(uint256[] calldata tokenIds_) external;
@@ -89,10 +79,6 @@ interface IStakeManager {
     function unstakeBakc(uint256[] calldata tokenIds_) external;
 
     function claimBakc(uint256[] calldata tokenIds_) external;
-
-    function withdrawRefund(address nft_) external;
-
-    function withdrawTotalRefund() external;
 
     struct NftArgs {
         uint256[] bayc;

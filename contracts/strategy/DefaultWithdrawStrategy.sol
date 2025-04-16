@@ -68,33 +68,10 @@ contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuardUpgradeabl
         vars.initBalance = wrapApeCoin.balanceOf(address(coinPool));
 
         // 1. withdraw refund
-        (uint256 refundPrincipal, uint256 refundReward) = staker.totalRefund();
-        if (refundPrincipal > 0 || refundReward > 0) {
-            staker.withdrawTotalRefund();
-        }
-        vars.changedBalance = _changedBalance(address(coinPool), vars.initBalance);
 
         // 2. claim ape coin pool
-        if (vars.changedBalance < required) {
-            vars.pendingRewards = staker.pendingRewards(ApeStakingLib.APE_COIN_POOL_ID);
-            if (vars.pendingRewards > 0) {
-                staker.claimApeCoin();
-                vars.changedBalance = _changedBalance(address(coinPool), vars.initBalance);
-            }
-        }
 
         // 3. unstake ape coin pool
-        if (vars.changedBalance < required) {
-            vars.stakedApeCoin = staker.stakedApeCoin(ApeStakingLib.APE_COIN_POOL_ID);
-            if (vars.stakedApeCoin > 0) {
-                uint256 unstakeAmount = required - vars.changedBalance;
-                if (unstakeAmount > vars.stakedApeCoin) {
-                    unstakeAmount = vars.stakedApeCoin;
-                }
-                staker.unstakeApeCoin(unstakeAmount);
-                vars.changedBalance = _changedBalance(address(coinPool), vars.initBalance);
-            }
-        }
 
         // 4. unstake bayc
         if (vars.changedBalance < required) {

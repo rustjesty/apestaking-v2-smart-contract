@@ -4,12 +4,14 @@ import { BigNumber, constants } from "ethers";
 import { impersonateAccount, setBalance } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { makeBN18 } from "./utils";
+import { ethers } from "hardhat";
 
 makeSuite("BendCoinPool", (contracts: Contracts, env: Env, snapshots: Snapshots) => {
   let bot: SignerWithAddress;
   let lastRevert: string;
   let alice: SignerWithAddress;
   let bob: SignerWithAddress;
+  let stakeManagerSigner: SignerWithAddress;
 
   before(async () => {
     await impersonateAccount(contracts.bendStakeManager.address);
@@ -17,6 +19,10 @@ makeSuite("BendCoinPool", (contracts: Contracts, env: Env, snapshots: Snapshots)
     bot = env.admin;
     alice = env.accounts[1];
     bob = env.accounts[2];
+
+    await impersonateAccount(contracts.bendStakeManager.address);
+    stakeManagerSigner = await ethers.getSigner(contracts.bendStakeManager.address);
+    await setBalance(stakeManagerSigner.address, makeBN18(100000));
 
     await contracts.wrapApeCoin.connect(alice).deposit({ value: makeBN18(1000000) });
     await contracts.wrapApeCoin.connect(alice).approve(contracts.bendCoinPool.address, constants.MaxUint256);
@@ -125,13 +131,13 @@ makeSuite("BendCoinPool", (contracts: Contracts, env: Env, snapshots: Snapshots)
 
   it("pullApeCoin", async () => {
     const pullAmount = (await contracts.bendCoinPool.pendingApeCoin()).sub(makeBN18(1));
-    const tx = contracts.bendStakeManager.stakeApeCoin(pullAmount);
+    const tx = contracts.bendCoinPool.connect(stakeManagerSigner).pullApeCoin(pullAmount);
     await expect(tx).changeTokenBalances(
       contracts.wrapApeCoin,
       [contracts.bendCoinPool.address, contracts.bendStakeManager.address],
-      [constants.Zero, constants.Zero]
+      [constants.Zero.sub(pullAmount), pullAmount]
     );
-    await expectPendingAmountChanged((await tx).blockNumber || 0, constants.Zero);
+    await expectPendingAmountChanged((await tx).blockNumber || 0, constants.Zero.sub(pullAmount));
 
     lastRevert = "pullApeCoin";
     await snapshots.capture(lastRevert);

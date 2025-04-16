@@ -6,12 +6,14 @@ import { BigNumber, constants, Contract, ContractTransaction } from "ethers";
 import { IApeCoinStaking, IRewardsStrategy, IStakeManager } from "../../typechain-types";
 import { impersonateAccount, setBalance } from "@nomicfoundation/hardhat-network-helpers";
 import { ethers } from "hardhat";
+import { parseEther } from "ethers/lib/utils";
 
 makeSuite("BendStakeManager", (contracts: Contracts, env: Env, snapshots: Snapshots) => {
   let owner: SignerWithAddress;
   let bot: SignerWithAddress;
   let feeRecipient: SignerWithAddress;
   let stakeManagerSigner: SignerWithAddress;
+  let nftVaultSigner: SignerWithAddress;
   let fee: number;
   let lastRevert: string;
   let baycTokenIds: number[];
@@ -61,6 +63,10 @@ makeSuite("BendStakeManager", (contracts: Contracts, env: Env, snapshots: Snapsh
     stakeManagerSigner = await ethers.getSigner(contracts.bendStakeManager.address);
     await setBalance(stakeManagerSigner.address, makeBN18(100000));
 
+    nftVaultSigner = await ethers.getSigner(contracts.nftVault.address);
+    await impersonateAccount(contracts.nftVault.address);
+    await setBalance(contracts.nftVault.address, makeBN18(100));
+
     lastRevert = "init";
     await snapshots.capture(lastRevert);
   });
@@ -75,9 +81,6 @@ makeSuite("BendStakeManager", (contracts: Contracts, env: Env, snapshots: Snapsh
     await expect(
       contracts.bendStakeManager.updateRewardsStrategy(constants.AddressZero, constants.AddressZero)
     ).revertedWith("BendStakeManager: nft must be ape");
-    await expect(contracts.bendStakeManager.refundOfExcludeFee(constants.AddressZero)).revertedWith(
-      "BendStakeManager: nft must be ape"
-    );
   });
 
   it("onlyBot: reverts", async () => {
@@ -224,64 +227,6 @@ makeSuite("BendStakeManager", (contracts: Contracts, env: Env, snapshots: Snapsh
       [constants.Zero.sub(amount), amount]
     );
     expect(await contracts.bendCoinPool.pendingApeCoin()).eq(pendingApeCoin.sub(amount));
-  });
-
-  // There's no ApeCoin pool on ApeChain
-
-  it("stakeApeCoin", async () => {
-    const pendingApeCoinBefore = await contracts.bendCoinPool.pendingApeCoin();
-    const stakedAmountBefore = await contracts.bendStakeManager.stakedApeCoin(0);
-
-    const amount = makeBN18(randomUint(1, APE_COIN_AMOUNT));
-    // const amount = makeBN18(60000);
-    // console.log(`stake ${amount.div(constants.WeiPerEther)}`);
-    await expect(contracts.bendStakeManager.stakeApeCoin(amount)).changeTokenBalances(
-      contracts.wrapApeCoin,
-      [contracts.bendCoinPool.address, contracts.bendStakeManager.address],
-      [constants.Zero, constants.Zero]
-    );
-
-    expect(await contracts.bendCoinPool.pendingApeCoin()).eq(pendingApeCoinBefore);
-    expect(await contracts.bendStakeManager.stakedApeCoin(0)).eq(stakedAmountBefore);
-    lastRevert = "stakeApeCoin";
-    await snapshots.capture(lastRevert);
-  });
-
-  it("claimApeCoin", async () => {
-    await advanceHours(10);
-    const rewards = await contracts.bendStakeManager.pendingRewards(0);
-
-    await expect(contracts.bendStakeManager.claimApeCoin()).changeTokenBalances(
-      contracts.wrapApeCoin,
-      [contracts.bendCoinPool.address],
-      [rewards]
-    );
-
-    expect(await contracts.bendStakeManager.pendingRewards(0)).eq(0);
-  });
-
-  it("unstakeApeCoin: unstake partially", async () => {
-    await advanceHours(10);
-    const rewards = await contracts.bendStakeManager.pendingRewards(0);
-    const unstakeAmount = (await contracts.bendStakeManager.stakedApeCoin(0)).div(2);
-
-    await expect(contracts.bendStakeManager.unstakeApeCoin(unstakeAmount)).changeTokenBalances(
-      contracts.wrapApeCoin,
-      [contracts.bendCoinPool.address],
-      [0]
-    );
-  });
-
-  it("unstakeApeCoin: unstake fully", async () => {
-    await advanceHours(10);
-    const rewards = await contracts.bendStakeManager.pendingRewards(0);
-    const unstakeAmount = await contracts.bendStakeManager.stakedApeCoin(0);
-
-    await expect(contracts.bendStakeManager.unstakeApeCoin(unstakeAmount)).changeTokenBalances(
-      contracts.wrapApeCoin,
-      [contracts.bendCoinPool.address],
-      [unstakeAmount.add(rewards)]
-    );
   });
 
   it("prepareApeCoin: from pending ape coin & rewards", async () => {
@@ -637,322 +582,6 @@ makeSuite("BendStakeManager", (contracts: Contracts, env: Env, snapshots: Snapsh
     expect(await contracts.bendStakeManager.stakedApeCoin(3)).eq(stakeAmount);
   });
 
-  it("withdrawRefund: burn all stBAYC", async () => {
-    let baycPooStakedAmount = constants.Zero;
-    let realBaycPoolRewards = constants.Zero;
-    for (const id of baycTokenIds) {
-      baycPooStakedAmount = baycPooStakedAmount.add((await contracts.apeStaking.nftPosition(1, id)).stakedAmount);
-      realBaycPoolRewards = realBaycPoolRewards.add(await contracts.apeStaking.pendingRewards(1, id));
-    }
-    const baycPoolRewards = excludeFee(realBaycPoolRewards);
-    const baycFee = realBaycPoolRewards.sub(baycPoolRewards);
-
-    expect(await contracts.bendStakeManager.refundOfExcludeFee(contracts.bayc.address))
-      .eq(await contracts.bendStakeManager.refundOfExcludeFee(contracts.bakc.address))
-      .eq(await contracts.bendStakeManager.totalRefundExcludeFee())
-      .eq(0);
-    const preBaycStakedAmount = await contracts.bendStakeManager.stakedApeCoin(1);
-    const preBaycPendingRewards = await contracts.bendStakeManager.pendingRewards(1);
-
-    await contracts.stBayc.connect(stakeManagerSigner).burn(owner.address, baycTokenIds);
-
-    expect(
-      (await contracts.bendStakeManager.refundOfExcludeFee(contracts.bayc.address)).add(
-        await contracts.bendStakeManager.refundOfExcludeFee(contracts.bakc.address)
-      )
-    ).eq(await contracts.bendStakeManager.totalRefundExcludeFee());
-
-    expect(await contracts.bendStakeManager.refundOfExcludeFee(contracts.bayc.address)).eq(
-      baycPooStakedAmount.add(baycPoolRewards)
-    );
-
-    expect(await contracts.bendStakeManager.stakedApeCoin(1)).eq(preBaycStakedAmount.sub(baycPooStakedAmount));
-    expect(await contracts.bendStakeManager.pendingRewards(1)).eq(preBaycPendingRewards.sub(baycPoolRewards));
-
-    const baycRewards = await calculateNftRewards(baycPoolRewards, contracts.baycStrategy);
-
-    await expect(contracts.bendStakeManager.withdrawRefund(contracts.bayc.address)).changeTokenBalances(
-      contracts.wrapApeCoin,
-      [
-        contracts.nftVault.address,
-        contracts.bendCoinPool.address,
-        contracts.bendNftPool.address,
-        contracts.bendStakeManager.address,
-      ],
-      [
-        constants.Zero.sub(baycPooStakedAmount.add(realBaycPoolRewards)),
-        baycPooStakedAmount.add(baycPoolRewards.sub(baycRewards)),
-        baycRewards,
-        baycFee,
-      ]
-    );
-  });
-
-  it("withdrawRefund: burn stBAYC with nonpaired bakc", async () => {
-    let baycPooStakedAmount = constants.Zero;
-    let realBaycPoolRewards = constants.Zero;
-    let burnBaycTokenIds = [];
-    for (const id of baycTokenIds) {
-      burnBaycTokenIds.push(id);
-      baycPooStakedAmount = baycPooStakedAmount.add((await contracts.apeStaking.nftPosition(1, id)).stakedAmount);
-      realBaycPoolRewards = realBaycPoolRewards.add(await contracts.apeStaking.pendingRewards(1, id));
-    }
-    expect(await contracts.bendStakeManager.refundOfExcludeFee(contracts.bayc.address))
-      .eq(await contracts.bendStakeManager.totalRefundExcludeFee())
-      .eq(0);
-    const baycPoolRewards = excludeFee(realBaycPoolRewards);
-    const fee = realBaycPoolRewards.sub(baycPoolRewards);
-
-    const preBaycStakedAmount = await contracts.bendStakeManager.stakedApeCoin(1);
-    const preBaycPendingRewards = await contracts.bendStakeManager.pendingRewards(1);
-
-    const preBakcStakedAmount = await contracts.bendStakeManager.stakedApeCoin(3);
-    const preBakcPendingRewards = await contracts.bendStakeManager.pendingRewards(3);
-
-    await contracts.stBayc.connect(stakeManagerSigner).burn(owner.address, burnBaycTokenIds);
-
-    expect(await contracts.bendStakeManager.refundOfExcludeFee(contracts.bayc.address)).eq(
-      await contracts.bendStakeManager.totalRefundExcludeFee()
-    );
-
-    expect(await contracts.bendStakeManager.refundOfExcludeFee(contracts.bayc.address)).eq(
-      baycPooStakedAmount.add(baycPoolRewards)
-    );
-
-    expect(await contracts.bendStakeManager.stakedApeCoin(1)).eq(preBaycStakedAmount.sub(baycPooStakedAmount));
-    expect(await contracts.bendStakeManager.pendingRewards(1)).closeTo(preBaycPendingRewards.sub(baycPoolRewards), 5);
-
-    expect(await contracts.bendStakeManager.stakedApeCoin(3)).eq(preBakcStakedAmount);
-    expect(await contracts.bendStakeManager.pendingRewards(3)).eq(preBakcPendingRewards);
-
-    const baycRewards = await calculateNftRewards(baycPoolRewards, contracts.baycStrategy);
-
-    await expect(contracts.bendStakeManager.withdrawRefund(contracts.bayc.address)).changeTokenBalances(
-      contracts.wrapApeCoin,
-      [
-        contracts.nftVault.address,
-        contracts.bendCoinPool.address,
-        contracts.bendNftPool.address,
-        contracts.bendStakeManager.address,
-      ],
-      [
-        constants.Zero.sub(baycPooStakedAmount.add(realBaycPoolRewards)),
-        baycPooStakedAmount.add(baycPoolRewards.sub(baycRewards)),
-        baycRewards,
-        fee,
-      ]
-    );
-  });
-
-  it("withdrawRefund: burn all stMAYC", async () => {
-    let maycPooStakedAmount = constants.Zero;
-    let realMaycPoolRewards = constants.Zero;
-    for (const id of maycTokenIds) {
-      maycPooStakedAmount = maycPooStakedAmount.add((await contracts.apeStaking.nftPosition(2, id)).stakedAmount);
-      realMaycPoolRewards = realMaycPoolRewards.add(await contracts.apeStaking.pendingRewards(2, id));
-    }
-    const maycPoolRewards = excludeFee(realMaycPoolRewards);
-    const maycFee = realMaycPoolRewards.sub(maycPoolRewards);
-
-    expect(await contracts.bendStakeManager.refundOfExcludeFee(contracts.mayc.address))
-      .eq(await contracts.bendStakeManager.refundOfExcludeFee(contracts.bakc.address))
-      .eq(await contracts.bendStakeManager.totalRefundExcludeFee())
-      .eq(0);
-    const preMaycStakedAmount = await contracts.bendStakeManager.stakedApeCoin(2);
-    const preMaycPendingRewards = await contracts.bendStakeManager.pendingRewards(2);
-
-    await contracts.stMayc.connect(stakeManagerSigner).burn(owner.address, maycTokenIds);
-
-    expect(
-      (await contracts.bendStakeManager.refundOfExcludeFee(contracts.mayc.address)).add(
-        await contracts.bendStakeManager.refundOfExcludeFee(contracts.bakc.address)
-      )
-    ).eq(await contracts.bendStakeManager.totalRefundExcludeFee());
-
-    expect(await contracts.bendStakeManager.refundOfExcludeFee(contracts.mayc.address)).eq(
-      maycPooStakedAmount.add(maycPoolRewards)
-    );
-
-    expect(await contracts.bendStakeManager.stakedApeCoin(2)).eq(preMaycStakedAmount.sub(maycPooStakedAmount));
-    expect(await contracts.bendStakeManager.pendingRewards(2)).eq(preMaycPendingRewards.sub(maycPoolRewards));
-
-    const maycRewards = await calculateNftRewards(maycPoolRewards, contracts.maycStrategy);
-
-    await expect(contracts.bendStakeManager.withdrawRefund(contracts.mayc.address)).changeTokenBalances(
-      contracts.wrapApeCoin,
-      [
-        contracts.nftVault.address,
-        contracts.bendCoinPool.address,
-        contracts.bendNftPool.address,
-        contracts.bendStakeManager.address,
-      ],
-      [
-        constants.Zero.sub(maycPooStakedAmount.add(realMaycPoolRewards)),
-        maycPooStakedAmount.add(maycPoolRewards.sub(maycRewards)),
-        maycRewards,
-        maycFee,
-      ]
-    );
-  });
-
-  it("withdrawRefund: burn stMAYC with nonpaired bakc", async () => {
-    let maycPooStakedAmount = constants.Zero;
-    let realMaycPoolRewards = constants.Zero;
-    let burnMaycTokenIds = [];
-    for (const id of maycTokenIds) {
-      burnMaycTokenIds.push(id);
-      maycPooStakedAmount = maycPooStakedAmount.add((await contracts.apeStaking.nftPosition(2, id)).stakedAmount);
-      realMaycPoolRewards = realMaycPoolRewards.add(await contracts.apeStaking.pendingRewards(2, id));
-    }
-    const maycPoolRewards = excludeFee(realMaycPoolRewards);
-    const fee = realMaycPoolRewards.sub(maycPoolRewards);
-
-    expect(await contracts.bendStakeManager.refundOfExcludeFee(contracts.mayc.address))
-      .eq(await contracts.bendStakeManager.totalRefundExcludeFee())
-      .eq(0);
-
-    const preMaycStakedAmount = await contracts.bendStakeManager.stakedApeCoin(2);
-    const preMaycPendingRewards = await contracts.bendStakeManager.pendingRewards(2);
-
-    const preBakcStakedAmount = await contracts.bendStakeManager.stakedApeCoin(3);
-    const preBakcPendingRewards = await contracts.bendStakeManager.pendingRewards(3);
-
-    await contracts.stMayc.connect(stakeManagerSigner).burn(owner.address, burnMaycTokenIds);
-
-    expect(await contracts.bendStakeManager.refundOfExcludeFee(contracts.mayc.address)).eq(
-      await contracts.bendStakeManager.totalRefundExcludeFee()
-    );
-
-    expect(await contracts.bendStakeManager.refundOfExcludeFee(contracts.mayc.address)).eq(
-      maycPooStakedAmount.add(maycPoolRewards)
-    );
-
-    expect(await contracts.bendStakeManager.stakedApeCoin(2)).eq(preMaycStakedAmount.sub(maycPooStakedAmount));
-    expect(await contracts.bendStakeManager.pendingRewards(2)).closeTo(preMaycPendingRewards.sub(maycPoolRewards), 5);
-
-    expect(await contracts.bendStakeManager.stakedApeCoin(3)).eq(preBakcStakedAmount);
-    expect(await contracts.bendStakeManager.pendingRewards(3)).eq(preBakcPendingRewards);
-
-    const maycRewards = await calculateNftRewards(maycPoolRewards, contracts.maycStrategy);
-
-    await expect(contracts.bendStakeManager.withdrawRefund(contracts.mayc.address)).changeTokenBalances(
-      contracts.wrapApeCoin,
-      [
-        contracts.nftVault.address,
-        contracts.bendCoinPool.address,
-        contracts.bendNftPool.address,
-        contracts.bendStakeManager.address,
-      ],
-      [
-        constants.Zero.sub(maycPooStakedAmount.add(realMaycPoolRewards)),
-        maycPooStakedAmount.add(maycPoolRewards.sub(maycRewards)),
-        maycRewards,
-        fee,
-      ]
-    );
-  });
-
-  it("withdrawRefund: burn part of stBAKC", async () => {
-    let pooStakedAmount = constants.Zero;
-    let realPoolRewards = constants.Zero;
-    let tokenIds = shuffledSubarray(bakcTokenIds);
-    for (const id of tokenIds) {
-      pooStakedAmount = pooStakedAmount.add((await contracts.apeStaking.nftPosition(3, id)).stakedAmount);
-      realPoolRewards = realPoolRewards.add(await contracts.apeStaking.pendingRewards(3, id));
-    }
-    const poolRewards = excludeFee(realPoolRewards);
-    const fee = realPoolRewards.sub(poolRewards);
-
-    expect(await contracts.bendStakeManager.refundOfExcludeFee(contracts.bakc.address))
-      .eq(await contracts.bendStakeManager.totalRefundExcludeFee())
-      .eq(0);
-
-    const preStakedAmount = await contracts.bendStakeManager.stakedApeCoin(3);
-    const prePendingRewards = await contracts.bendStakeManager.pendingRewards(3);
-
-    await contracts.stBakc.connect(stakeManagerSigner).burn(owner.address, tokenIds);
-
-    expect(await contracts.bendStakeManager.refundOfExcludeFee(contracts.bakc.address)).eq(
-      await contracts.bendStakeManager.totalRefundExcludeFee()
-    );
-
-    expect(await contracts.bendStakeManager.refundOfExcludeFee(contracts.bakc.address)).eq(
-      pooStakedAmount.add(poolRewards)
-    );
-
-    expect(await contracts.bendStakeManager.stakedApeCoin(3)).eq(preStakedAmount.sub(pooStakedAmount));
-    expect(await contracts.bendStakeManager.pendingRewards(3)).eq(prePendingRewards.sub(poolRewards));
-
-    const bakcRewards = await calculateNftRewards(poolRewards, contracts.bakcStrategy);
-
-    await expect(contracts.bendStakeManager.withdrawRefund(contracts.bakc.address)).changeTokenBalances(
-      contracts.wrapApeCoin,
-      [
-        contracts.nftVault.address,
-        contracts.bendCoinPool.address,
-        contracts.bendNftPool.address,
-        contracts.bendStakeManager.address,
-      ],
-      [
-        constants.Zero.sub(pooStakedAmount.add(realPoolRewards)),
-        pooStakedAmount.add(poolRewards.sub(bakcRewards)),
-        bakcRewards,
-        fee,
-      ]
-    );
-  });
-
-  it("withdrawTotalRefund", async () => {
-    await contracts.stBayc.connect(stakeManagerSigner).burn(owner.address, shuffledSubarray(baycTokenIds));
-    await contracts.stMayc.connect(stakeManagerSigner).burn(owner.address, shuffledSubarray(maycTokenIds));
-    await contracts.stBakc.connect(stakeManagerSigner).burn(owner.address, shuffledSubarray(bakcTokenIds));
-
-    const totalRefundExcludeFee = await contracts.bendStakeManager.totalRefundExcludeFee();
-    expect(totalRefundExcludeFee).closeTo(
-      (await contracts.bendStakeManager.refundOfExcludeFee(contracts.bayc.address))
-        .add(await contracts.bendStakeManager.refundOfExcludeFee(contracts.mayc.address))
-        .add(await contracts.bendStakeManager.refundOfExcludeFee(contracts.bakc.address)),
-      5
-    );
-    const preNftPoolBalance = await contracts.wrapApeCoin.balanceOf(contracts.bendNftPool.address);
-    const preCoinPoolBalance = await contracts.wrapApeCoin.balanceOf(contracts.bendCoinPool.address);
-    const preStakeManagerBalance = await contracts.wrapApeCoin.balanceOf(contracts.bendStakeManager.address);
-    const preNftVaultBalance = await contracts.wrapApeCoin.balanceOf(contracts.nftVault.address);
-    await snapshots.capture("withdrawTotalRefund");
-
-    await contracts.bendStakeManager.withdrawRefund(contracts.bayc.address);
-    await contracts.bendStakeManager.withdrawRefund(contracts.mayc.address);
-    await contracts.bendStakeManager.withdrawRefund(contracts.bakc.address);
-
-    let nftPoolBalance = await contracts.wrapApeCoin.balanceOf(contracts.bendNftPool.address);
-    let coinPoolBalance = await contracts.wrapApeCoin.balanceOf(contracts.bendCoinPool.address);
-    let stakeManagerBalance = await contracts.wrapApeCoin.balanceOf(contracts.bendStakeManager.address);
-    let nftVaultBalance = await contracts.wrapApeCoin.balanceOf(contracts.nftVault.address);
-    let fee = stakeManagerBalance.sub(preStakeManagerBalance);
-
-    expect(preNftVaultBalance.sub(nftVaultBalance).sub(fee)).closeTo(totalRefundExcludeFee, 5);
-
-    expect(preNftVaultBalance.sub(nftVaultBalance)).closeTo(
-      coinPoolBalance.sub(preCoinPoolBalance).add(nftPoolBalance.sub(preNftPoolBalance)).add(fee),
-      5
-    );
-    await snapshots.revert("withdrawTotalRefund");
-
-    await contracts.bendStakeManager.withdrawTotalRefund();
-    nftPoolBalance = await contracts.wrapApeCoin.balanceOf(contracts.bendNftPool.address);
-    coinPoolBalance = await contracts.wrapApeCoin.balanceOf(contracts.bendCoinPool.address);
-    stakeManagerBalance = await contracts.wrapApeCoin.balanceOf(contracts.bendStakeManager.address);
-    nftVaultBalance = await contracts.wrapApeCoin.balanceOf(contracts.nftVault.address);
-    fee = stakeManagerBalance.sub(preStakeManagerBalance);
-
-    expect(preNftVaultBalance.sub(nftVaultBalance).sub(fee)).closeTo(totalRefundExcludeFee, 5);
-
-    expect(preNftVaultBalance.sub(nftVaultBalance)).closeTo(
-      coinPoolBalance.sub(preCoinPoolBalance).add(nftPoolBalance.sub(preNftPoolBalance)).add(fee),
-      5
-    );
-  });
-
   it("totalStakedApeCoin", async () => {
     expect(await contracts.bendStakeManager.totalStakedApeCoin()).eq(
       (await contracts.bendStakeManager.stakedApeCoin(0))
@@ -976,26 +605,19 @@ makeSuite("BendStakeManager", (contracts: Contracts, env: Env, snapshots: Snapsh
     await contracts.bendStakeManager.unstakeBakc(bakcTokenIds);
     const stakedAmount = await contracts.bendStakeManager.stakedApeCoin(0);
     expect(await contracts.bendStakeManager.totalStakedApeCoin()).eq(stakedAmount);
-
-    await contracts.bendStakeManager.unstakeApeCoin(stakedAmount);
-    expect(await contracts.bendStakeManager.totalStakedApeCoin()).eq(0);
-    expect(await contracts.bendStakeManager.stakedApeCoin(0)).eq(0);
   });
 
-  it("withdrawApeCoin: someone burn stNft and withdraw all of ape coin", async () => {
+  it("withdrawApeCoin: withdraw all of ape coin", async () => {
     await advanceHours(10);
 
-    await contracts.stBakc.connect(stakeManagerSigner).burn(owner.address, [10]);
-    lastRevert = "withdrawApeCoin";
-    await snapshots.capture(lastRevert);
-
-    const withdrawAmount = (await contracts.bendStakeManager.totalStakedApeCoin())
-      .add(await contracts.bendStakeManager.totalPendingRewards())
-      .add(await contracts.bendStakeManager.totalRefundExcludeFee());
+    const withdrawAmount = (await contracts.bendStakeManager.totalStakedApeCoin()).add(
+      await contracts.bendStakeManager.totalPendingRewards()
+    );
 
     const coinPoolSigner = await ethers.getSigner(contracts.bendCoinPool.address);
     const preBalance = await contracts.wrapApeCoin.balanceOf(contracts.bendCoinPool.address);
     const preNftPoolBalance = await contracts.wrapApeCoin.balanceOf(contracts.bendNftPool.address);
+
     await contracts.bendStakeManager.connect(coinPoolSigner).withdrawApeCoin(withdrawAmount);
 
     const coinPoolReceived = (await contracts.wrapApeCoin.balanceOf(contracts.bendCoinPool.address)).sub(preBalance);
@@ -1005,54 +627,134 @@ makeSuite("BendStakeManager", (contracts: Contracts, env: Env, snapshots: Snapsh
     expect(coinPoolReceived.add(nftPoolReceived)).closeTo(withdrawAmount, 5);
   });
 
-  it("withdrawApeCoin: refund only", async () => {
-    const refundDetails = await contracts.bendStakeManager.refundOfDetails(contracts.bakc.address);
-    const nftRewards = await calculateNftRewards(refundDetails.reward, contracts.bakcStrategy);
-    const coinPoolSigner = await ethers.getSigner(contracts.bendCoinPool.address);
-    await expect(
-      contracts.bendStakeManager.connect(coinPoolSigner).withdrawApeCoin(refundDetails.principal)
-    ).changeTokenBalances(
-      contracts.wrapApeCoin,
-      [contracts.bendCoinPool.address, contracts.bendNftPool.address],
-      [refundDetails.principal.add(refundDetails.reward.sub(nftRewards)), nftRewards]
-    );
+  it("Revert Snapshot to stakeBayc", async () => {
+    lastRevert = "stakeBayc";
   });
 
-  it("withdrawApeCoin: refund & coin pool rewards", async () => {
-    const refundDetails = await contracts.bendStakeManager.refundOfDetails(contracts.bakc.address);
-    const nftRewards = await calculateNftRewards(refundDetails.reward, contracts.bakcStrategy);
-    const coinPoolRewards = refundDetails.reward.sub(nftRewards);
+  it("asyncInit", async () => {
+    await contracts.mockBeacon.setFees(parseEther("0.399572542890580499"), 0);
+    await contracts.bayc.setLocked(baycTokenIds[0], true);
 
-    const coinPoolPendingRewards = await contracts.bendStakeManager.pendingRewards(0);
-
-    const withdrawAmount = refundDetails.principal.add(coinPoolRewards).add(coinPoolPendingRewards);
-
-    const coinPoolSigner = await ethers.getSigner(contracts.bendCoinPool.address);
-    await expect(
-      contracts.bendStakeManager.connect(coinPoolSigner).withdrawApeCoin(withdrawAmount)
-    ).changeTokenBalances(
-      contracts.wrapApeCoin,
-      [contracts.bendCoinPool.address, contracts.bendNftPool.address],
-      [refundDetails.principal.add(coinPoolRewards).add(coinPoolPendingRewards), nftRewards]
-    );
+    lastRevert = "asyncInit";
+    await snapshots.capture(lastRevert);
   });
 
-  it("withdrawApeCoin: refund & coin pool rewards & coin pool staked ape coin", async () => {
-    const refundDetails = await contracts.bendStakeManager.refundOfDetails(contracts.bakc.address);
-    const nftRewards = await calculateNftRewards(refundDetails.reward, contracts.bakcStrategy);
-    const coinPoolRewards = refundDetails.reward.sub(nftRewards);
+  it("Async: claimBayc", async () => {
+    await advanceHours(10);
 
-    const coinPoolPendingRewards = await contracts.bendStakeManager.pendingRewards(0);
+    const rawRewards = await contracts.apeStaking.pendingRewards(1, baycTokenIds[0]);
+    const claimFee = await contracts.apeStaking.quoteRequest(1, [baycTokenIds[0]]);
+    const realRewards = rawRewards.sub(claimFee);
 
-    const withdrawAmount = refundDetails.principal.add(coinPoolRewards).add(coinPoolPendingRewards);
+    // request claim
+    console.log("claimBayc:", realRewards);
 
-    const coinPoolSigner = await ethers.getSigner(contracts.bendCoinPool.address);
-    await expect(
-      contracts.bendStakeManager.connect(coinPoolSigner).withdrawApeCoin(withdrawAmount)
-    ).changeTokenBalances(
-      contracts.wrapApeCoin,
-      [contracts.bendCoinPool.address, contracts.bendNftPool.address],
-      [refundDetails.principal.add(coinPoolRewards).add(coinPoolPendingRewards), nftRewards]
-    );
+    const vaultBalanceBeforeClaim = await nftVaultSigner.getBalance();
+    const nftBalanceBeforeClaim = await contracts.wrapApeCoin.balanceOf(contracts.bendNftPool.address);
+    const stakeBalanceBeforeClaim = await contracts.wrapApeCoin.balanceOf(contracts.bendStakeManager.address);
+
+    const guidClaim = await contracts.bayc.getNextGUID();
+    await contracts.bendStakeManager.claimBayc([baycTokenIds[0]]);
+
+    const vaultBalanceAfterClaim = await nftVaultSigner.getBalance();
+    const nftBalanceAfterClaim = await contracts.wrapApeCoin.balanceOf(contracts.bendNftPool.address);
+    const stakeBalanceAfterClaim = await contracts.wrapApeCoin.balanceOf(contracts.bendStakeManager.address);
+
+    expect(vaultBalanceAfterClaim).lt(vaultBalanceBeforeClaim); // some gas cost
+    expect(nftBalanceBeforeClaim).eq(nftBalanceAfterClaim);
+    expect(stakeBalanceBeforeClaim).eq(stakeBalanceAfterClaim);
+
+    // execute callback
+    console.log("executeCallback:");
+
+    const vaultBalanceBeforeCallback = await nftVaultSigner.getBalance();
+
+    await contracts.bayc.executeCallback(contracts.apeStaking.address, guidClaim);
+
+    const vaultBalanceAfterCallback = await nftVaultSigner.getBalance();
+
+    expect(vaultBalanceAfterCallback).eq(vaultBalanceBeforeCallback.add(rawRewards));
+
+    // compound rewards
+
+    const rewardsNoFee = excludeFee(realRewards);
+    const nftRewards = await calculateNftRewards(rewardsNoFee, contracts.baycStrategy);
+    const coinRewards = rewardsNoFee.sub(nftRewards);
+
+    console.log("distributePendingFunds:", realRewards, rewardsNoFee, nftRewards);
+
+    const vaultBalanceBeforeCompound = await nftVaultSigner.getBalance();
+    const nftBalanceBeforeCompound = await contracts.wrapApeCoin.balanceOf(contracts.bendNftPool.address);
+    const coinBalanceBeforeCompound = await contracts.wrapApeCoin.balanceOf(contracts.bendCoinPool.address);
+
+    await contracts.bendStakeManager.distributePendingFunds();
+
+    const vaultBalanceAfterCompound = await nftVaultSigner.getBalance();
+    const nftBalanceAfterCompound = await contracts.wrapApeCoin.balanceOf(contracts.bendNftPool.address);
+    const coinBalanceAfterCompound = await contracts.wrapApeCoin.balanceOf(contracts.bendCoinPool.address);
+
+    expect(vaultBalanceAfterCompound).eq(vaultBalanceBeforeCompound.sub(realRewards)); // some gas cost
+    expect(nftBalanceAfterCompound).eq(nftBalanceBeforeCompound.add(nftRewards));
+    expect(coinBalanceAfterCompound).eq(coinBalanceBeforeCompound.add(coinRewards));
+  });
+
+  it("Async: unstakeBayc", async () => {
+    await advanceHours(10);
+
+    const principal = (await contracts.apeStaking.nftPosition(1, baycTokenIds[0])).stakedAmount;
+    const rawRewards = await contracts.apeStaking.pendingRewards(1, baycTokenIds[0]);
+    const claimFee = await contracts.apeStaking.quoteRequest(1, [baycTokenIds[0]]);
+    const realRewards = rawRewards.sub(claimFee);
+
+    // request claim
+    console.log("unstakeBayc:", realRewards);
+
+    const vaultBalanceBeforeClaim = await nftVaultSigner.getBalance();
+    const nftBalanceBeforeClaim = await contracts.wrapApeCoin.balanceOf(contracts.bendNftPool.address);
+    const stakeBalanceBeforeClaim = await contracts.wrapApeCoin.balanceOf(contracts.bendStakeManager.address);
+
+    const guidClaim = await contracts.bayc.getNextGUID();
+    await contracts.bendStakeManager.unstakeBayc([baycTokenIds[0]]);
+
+    const vaultBalanceAfterClaim = await nftVaultSigner.getBalance();
+    const nftBalanceAfterClaim = await contracts.wrapApeCoin.balanceOf(contracts.bendNftPool.address);
+    const stakeBalanceAfterClaim = await contracts.wrapApeCoin.balanceOf(contracts.bendStakeManager.address);
+
+    expect(vaultBalanceAfterClaim).lt(vaultBalanceBeforeClaim); // some gas cost
+    expect(nftBalanceBeforeClaim).eq(nftBalanceAfterClaim);
+    expect(stakeBalanceBeforeClaim).eq(stakeBalanceAfterClaim);
+
+    // execute callback
+    console.log("executeCallback:");
+
+    const vaultBalanceBeforeCallback = await nftVaultSigner.getBalance();
+
+    await contracts.bayc.executeCallback(contracts.apeStaking.address, guidClaim);
+
+    const vaultBalanceAfterCallback = await nftVaultSigner.getBalance();
+
+    expect(vaultBalanceAfterCallback).eq(vaultBalanceBeforeCallback.add(principal).add(rawRewards));
+
+    // compound rewards
+
+    const rewardsNoFee = excludeFee(realRewards);
+    const nftRewards = await calculateNftRewards(rewardsNoFee, contracts.baycStrategy);
+    const coinRewards = rewardsNoFee.sub(nftRewards);
+
+    console.log("distributePendingFunds:", realRewards, rewardsNoFee, nftRewards);
+
+    const vaultBalanceBeforeCompound = await nftVaultSigner.getBalance();
+    const nftBalanceBeforeCompound = await contracts.wrapApeCoin.balanceOf(contracts.bendNftPool.address);
+    const coinBalanceBeforeCompound = await contracts.wrapApeCoin.balanceOf(contracts.bendCoinPool.address);
+
+    await contracts.bendStakeManager.distributePendingFunds();
+
+    const vaultBalanceAfterCompound = await nftVaultSigner.getBalance();
+    const nftBalanceAfterCompound = await contracts.wrapApeCoin.balanceOf(contracts.bendNftPool.address);
+    const coinBalanceAfterCompound = await contracts.wrapApeCoin.balanceOf(contracts.bendCoinPool.address);
+
+    expect(vaultBalanceAfterCompound).eq(vaultBalanceBeforeCompound.sub(principal).sub(realRewards)); // some gas cost
+    expect(nftBalanceAfterCompound).eq(nftBalanceBeforeCompound.add(nftRewards));
+    expect(coinBalanceAfterCompound).eq(coinBalanceBeforeCompound.add(principal).add(coinRewards));
   });
 });

@@ -31,6 +31,7 @@ import {
   MockAddressProviderV2,
   MockWAPE,
   BendNftLockup,
+  MockBeacon,
 } from "../../typechain-types";
 import { Contract, BigNumber, constants } from "ethers";
 import { parseEther } from "ethers/lib/utils";
@@ -58,6 +59,7 @@ export interface Contracts {
   // ape staking
   wrapApeCoin: MockWAPE;
   // apeCoin: MintableERC20;
+  mockBeacon: MockBeacon;
   apeStaking: ApeCoinStaking;
   // staked nft
   nftVault: NftVault;
@@ -247,8 +249,7 @@ export async function setupContracts(): Promise<Contracts> {
   ]);
 
   //  staked nft
-  const vaultLogic = await deployContract("VaultLogic", []);
-  const nftVault = await deployContract<NftVault>("NftVault", [], { VaultLogic: vaultLogic.address });
+  const nftVault = await deployContract<NftVault>("NftVault", []);
   await nftVault.initialize(wrapApeCoin.address, apeStaking.address, delegateCash.address);
   const stBayc = await deployContract<StBAYC>("StBAYC", []);
   await stBayc.initialize(bayc.address, nftVault.address);
@@ -330,6 +331,7 @@ export async function setupContracts(): Promise<Contracts> {
     bakc,
     wrapApeCoin,
     // apeCoin,
+    mockBeacon,
     apeStaking,
     nftVault,
     stBayc,

@@ -5,6 +5,10 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
+interface IApeCoinStakingCallback {
+    function executeCallback(bytes32 guid) external;
+}
+
 /**
  * @title MintableERC721
  * @dev ERC721 minting logic
@@ -16,6 +20,7 @@ contract MintableERC721 is ERC721Enumerable, Ownable {
     uint256 public maxTokenId;
     mapping(uint256 => bool) public lockedTokens;
     bool public disableTransfer;
+    uint256 public nextReadId;
 
     constructor(string memory name, string memory symbol) Ownable() ERC721(name, symbol) {
         maxSupply = 10000;
@@ -69,22 +74,28 @@ contract MintableERC721 is ERC721Enumerable, Ownable {
         maxTokenId = maxTokenId_;
     }
 
+    function executeCallback(address apeCoinStaking_, bytes32 guid_) public {
+        IApeCoinStakingCallback(apeCoinStaking_).executeCallback(guid_);
+    }
+
     function readWithCallback(
         uint256[] calldata tokenIds,
         uint32[] calldata eids,
         uint128 callbackGasLimit
     ) public payable returns (bytes32) {
-        require(tokenIds.length == eids.length, "length mismatch");
-        require(tokenIds.length > 0, "empty tokenIds");
-        require(eids.length > 0, "empty eids");
+        tokenIds;
+        eids;
         callbackGasLimit;
 
-        bytes32[] memory results = new bytes32[](tokenIds.length);
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            results[i] = bytes32(tokenIds[i]);
-        }
+        bytes32 guid = getNextGUID();
 
-        return keccak256(abi.encodePacked(results));
+        nextReadId += 1;
+
+        return guid;
+    }
+
+    function getNextGUID() public view returns (bytes32) {
+        return keccak256(abi.encodePacked(nextReadId));
     }
 
     function locked(uint256 tokenId) public view returns (bool) {

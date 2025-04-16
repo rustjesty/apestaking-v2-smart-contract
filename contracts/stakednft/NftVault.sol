@@ -12,7 +12,6 @@ import {INftVault, IApeCoinStaking, IERC721ReceiverUpgradeable, IDelegateRegistr
 import {IDelegationRegistry} from "../interfaces/IDelegationRegistry.sol";
 
 import {ApeStakingLib} from "../libraries/ApeStakingLib.sol";
-import {VaultLogic} from "./VaultLogic.sol";
 import {IWAPE} from "../interfaces/IWAPE.sol";
 
 contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
@@ -57,6 +56,7 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         _vaultStorage.mayc = address(_vaultStorage.apeCoinStaking.mayc());
         _vaultStorage.bakc = address(_vaultStorage.apeCoinStaking.bakc());
         _vaultStorage.wrapApeCoin.approve(address(_vaultStorage.apeCoinStaking), type(uint256).max);
+        _vaultStorage.minGasFeeAmount = 20 * ApeStakingLib.APE_COIN_PRECISION;
     }
 
     receive() external payable {
@@ -76,15 +76,11 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     }
 
     function stakerOf(address nft_, uint256 tokenId_) external view onlyApe(nft_) returns (address) {
-        return VaultLogic._stakerOf(_vaultStorage, nft_, tokenId_);
+        return _stakerOf(nft_, tokenId_);
     }
 
     function ownerOf(address nft_, uint256 tokenId_) external view onlyApe(nft_) returns (address) {
-        return VaultLogic._ownerOf(_vaultStorage, nft_, tokenId_);
-    }
-
-    function refundOf(address nft_, address staker_) external view onlyApe(nft_) returns (Refund memory) {
-        return _vaultStorage.refunds[nft_][staker_];
+        return _ownerOf(nft_, tokenId_);
     }
 
     function positionOf(address nft_, address staker_) external view onlyApe(nft_) returns (Position memory) {
@@ -141,10 +137,7 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 tokenId_;
         for (uint256 i = 0; i < tokenIds_.length; i++) {
             tokenId_ = tokenIds_[i];
-            require(
-                msg.sender == VaultLogic._ownerOf(_vaultStorage, nft_, tokenId_),
-                "nftVault: only owner can delegate"
-            );
+            require(msg.sender == _ownerOf(nft_, tokenId_), "nftVault: only owner can delegate");
             _vaultStorage.delegationRegistry.delegateForToken(delegate_, nft_, tokenId_, value_);
         }
     }
@@ -175,10 +168,7 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 tokenId_;
         for (uint256 i = 0; i < tokenIds_.length; i++) {
             tokenId_ = tokenIds_[i];
-            require(
-                msg.sender == VaultLogic._ownerOf(_vaultStorage, nft_, tokenId_),
-                "nftVault: only owner can delegate"
-            );
+            require(msg.sender == _ownerOf(nft_, tokenId_), "nftVault: only owner can delegate");
             _vaultStorage.delegationRegistryV2.delegateERC721(delegate_, nft_, tokenId_, "", value_);
         }
     }
@@ -240,30 +230,23 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256[] calldata tokenIds_
     ) external override onlyApe(nft_) onlyAuthorized nonReentrant {
         require(tokenIds_.length > 0, "nftVault: invalid tokenIds");
-        address staker_ = VaultLogic._stakerOf(_vaultStorage, nft_, tokenIds_[0]);
+        address staker_ = _stakerOf(nft_, tokenIds_[0]);
 
-        VaultLogic._refundSinglePool(_vaultStorage, nft_, tokenIds_);
-
+        uint256 tokenId_;
+        IApeCoinStaking.Position memory position_;
         for (uint256 i = 0; i < tokenIds_.length; i++) {
-            require(IERC721Upgradeable(nft_).ownerOf(tokenIds_[i]) == address(this), "nftVault: invalid owner");
-            require(
-                msg.sender == VaultLogic._ownerOf(_vaultStorage, nft_, tokenIds_[i]),
-                "nftVault: caller must be nft owner"
-            );
-            require(
-                staker_ == VaultLogic._stakerOf(_vaultStorage, nft_, tokenIds_[i]),
-                "nftVault: staker must be same"
-            );
-            delete _vaultStorage.nfts[nft_][tokenIds_[i]];
+            tokenId_ = tokenIds_[i];
+            require(IERC721Upgradeable(nft_).ownerOf(tokenId_) == address(this), "nftVault: invalid owner");
+            require(msg.sender == _ownerOf(nft_, tokenId_), "nftVault: caller must be nft owner");
+            require(staker_ == _stakerOf(nft_, tokenId_), "nftVault: staker must be same");
+
+            // MUST unstake first before withdraw
+            position_ = _vaultStorage.apeCoinStaking.getNftPosition(nft_, tokenId_);
+            require(position_.stakedAmount == 0, "nftVault: nft already staked");
+
+            delete _vaultStorage.nfts[nft_][tokenId_];
         }
         emit NftWithdrawn(nft_, msg.sender, staker_, tokenIds_);
-    }
-
-    function withdrawRefunds(address nft_) external override onlyApe(nft_) onlyAuthorized nonReentrant {
-        Refund memory _refund = _vaultStorage.refunds[nft_][msg.sender];
-        uint256 amount = _refund.principal + _refund.reward;
-        delete _vaultStorage.refunds[nft_][msg.sender];
-        _vaultStorage.wrapApeCoin.transfer(msg.sender, amount);
     }
 
     function _stakeNft(
@@ -274,10 +257,7 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     ) internal {
         uint256 totalStakedAmount = 0;
         for (uint256 i = 0; i < tokenIds_.length; i++) {
-            require(
-                msg.sender == VaultLogic._stakerOf(_vaultStorage, nft_, tokenIds_[i]),
-                "nftVault: caller must be nft staker"
-            );
+            require(msg.sender == _stakerOf(nft_, tokenIds_[i]), "nftVault: caller must be nft staker");
             totalStakedAmount += amounts_[i];
             _vaultStorage.stakingTokenIds[nft_][msg.sender].add(tokenIds_[i]);
         }
@@ -288,7 +268,7 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         _vaultStorage.apeCoinStaking.deposit{value: totalStakedAmount}(poolId_, tokenIds_, amounts_);
 
-        VaultLogic._increasePosition(_vaultStorage, nft_, msg.sender, totalStakedAmount);
+        _increasePosition(nft_, msg.sender, totalStakedAmount);
 
         emit SingleNftStaked(nft_, msg.sender, tokenIds_, amounts_);
     }
@@ -300,34 +280,72 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256[] calldata amounts_,
         address recipient_
     ) internal returns (uint256 principal, uint256 rewards) {
+        require(recipient_ != address(0), "nftVault: zero recipient");
+        require(recipient_ != address(this), "nftVault: self recipient");
+
         IApeCoinStaking.Position memory position_;
         for (uint256 i = 0; i < tokenIds_.length; i++) {
-            require(
-                msg.sender == VaultLogic._stakerOf(_vaultStorage, nft_, tokenIds_[i]),
-                "nftVault: caller must be nft staker"
-            );
+            require(msg.sender == _stakerOf(nft_, tokenIds_[i]), "nftVault: caller must be nft staker");
             principal += amounts_[i];
+
             position_ = _vaultStorage.apeCoinStaking.getNftPosition(nft_, tokenIds_[i]);
             if (position_.stakedAmount == amounts_[i]) {
                 _vaultStorage.stakingTokenIds[nft_][msg.sender].remove(tokenIds_[i]);
             }
-        }
 
-        rewards = _vaultStorage.wrapApeCoin.balanceOf(recipient_);
+            rewards += _vaultStorage.apeCoinStaking.pendingRewards(poolId_, tokenIds_[i]);
+        }
 
         // withdraw nft from staking, and wrap ape coin
-        _vaultStorage.apeCoinStaking.withdraw(poolId_, tokenIds_, amounts_, address(this));
+        uint256 deltaBalance = address(this).balance;
+        uint256 fee = _vaultStorage.apeCoinStaking.quoteRequest(poolId_, tokenIds_);
+        uint256 paidFee;
 
-        uint256 nativeBalance = address(this).balance;
-        IWAPE(address(_vaultStorage.wrapApeCoin)).deposit{value: nativeBalance}();
-        IERC20Upgradeable(address(_vaultStorage.wrapApeCoin)).transfer(recipient_, nativeBalance);
-
-        rewards = _vaultStorage.wrapApeCoin.balanceOf(recipient_) - rewards - principal;
-        if (rewards > 0) {
-            VaultLogic._updateRewardsDebt(_vaultStorage, nft_, msg.sender, rewards);
+        // all rewards paid gas fee in first
+        if (rewards > fee) {
+            rewards -= fee;
+            paidFee = fee;
+        } else {
+            paidFee = rewards;
+            rewards = 0;
         }
 
-        VaultLogic._decreasePosition(_vaultStorage, nft_, msg.sender, principal);
+        _vaultStorage.apeCoinStaking.withdraw{value: fee}(poolId_, tokenIds_, amounts_, address(this));
+
+        // if the withdraw is synchronous, this contract will receive some native ape coin
+        if (address(this).balance > deltaBalance) {
+            deltaBalance = address(this).balance - deltaBalance;
+
+            // if returned native less than principal, no need to pay the gas fee
+            if (deltaBalance > principal) {
+                // pay the gas fee from the rewards
+                uint256 remainRewards = deltaBalance - principal;
+                if (remainRewards < paidFee) {
+                    paidFee = remainRewards;
+                }
+            } else {
+                paidFee = 0;
+            }
+
+            deltaBalance -= paidFee;
+
+            if (deltaBalance > 0) {
+                IWAPE(address(_vaultStorage.wrapApeCoin)).deposit{value: deltaBalance}();
+                IERC20Upgradeable(address(_vaultStorage.wrapApeCoin)).transfer(recipient_, deltaBalance);
+            }
+
+            // in sync case, all funds and gas fee never in pending
+        } else {
+            // in async case, all funds and gas fee are in pending
+            _vaultStorage.totalPendingFunds += (principal + rewards);
+        }
+
+        // the claim maybe sync or async, so we need to update rewards debt in advance
+        if (rewards > 0) {
+            _updateRewardsDebt(nft_, msg.sender, rewards);
+        }
+
+        _decreasePosition(nft_, msg.sender, principal);
 
         emit SingleNftUnstaked(nft_, msg.sender, tokenIds_, amounts_);
     }
@@ -338,25 +356,53 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256[] calldata tokenIds_,
         address recipient_
     ) internal returns (uint256 rewards) {
+        require(recipient_ != address(0), "nftVault: zero recipient");
+        require(recipient_ != address(this), "nftVault: self recipient");
+
         for (uint256 i = 0; i < tokenIds_.length; i++) {
-            require(
-                msg.sender == VaultLogic._stakerOf(_vaultStorage, nft_, tokenIds_[i]),
-                "nftVault: caller must be nft staker"
-            );
+            require(msg.sender == _stakerOf(nft_, tokenIds_[i]), "nftVault: caller must be nft staker");
+
+            rewards += _vaultStorage.apeCoinStaking.pendingRewards(poolId_, tokenIds_[i]);
         }
 
-        rewards = _vaultStorage.wrapApeCoin.balanceOf(address(recipient_));
-
         // claim rewards from staking, and wrap ape coin
-        _vaultStorage.apeCoinStaking.claim(poolId_, tokenIds_, address(this));
+        uint256 deltaBalance = address(this).balance;
+        uint256 fee = _vaultStorage.apeCoinStaking.quoteRequest(poolId_, tokenIds_);
+        uint256 paidFee;
 
-        uint256 nativeBalance = address(this).balance;
-        IWAPE(address(_vaultStorage.wrapApeCoin)).deposit{value: nativeBalance}();
-        IERC20Upgradeable(address(_vaultStorage.wrapApeCoin)).transfer(recipient_, nativeBalance);
+        // all rewards paid gas fee in first
+        if (rewards > fee) {
+            rewards -= fee;
+            paidFee = fee;
+        } else {
+            paidFee = rewards;
+            rewards = 0;
+        }
 
-        rewards = _vaultStorage.wrapApeCoin.balanceOf(recipient_) - rewards;
+        _vaultStorage.apeCoinStaking.claim{value: fee}(poolId_, tokenIds_, address(this));
+
+        // if the claim is synchronous, this contract will receive some native ape coin
+        if (address(this).balance > deltaBalance) {
+            deltaBalance = address(this).balance - deltaBalance;
+
+            if (deltaBalance > paidFee) {
+                deltaBalance -= paidFee;
+            }
+
+            if (deltaBalance > 0) {
+                IWAPE(address(_vaultStorage.wrapApeCoin)).deposit{value: deltaBalance}();
+                IERC20Upgradeable(address(_vaultStorage.wrapApeCoin)).transfer(recipient_, deltaBalance);
+            }
+
+            // in async case, all funds and gas fee never in pending
+        } else {
+            // in async case, all funds and gas fee are in pending
+            _vaultStorage.totalPendingFunds += (rewards);
+        }
+
+        // the claim maybe sync or async, so we need to update rewards debt in advance
         if (rewards > 0) {
-            VaultLogic._updateRewardsDebt(_vaultStorage, nft_, msg.sender, rewards);
+            _updateRewardsDebt(nft_, msg.sender, rewards);
         }
 
         emit SingleNftClaimed(nft_, msg.sender, tokenIds_, rewards);
@@ -432,5 +478,57 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         address recipient_
     ) external override onlyAuthorized nonReentrant returns (uint256 rewards) {
         return _claimNft(ApeStakingLib.BAKC_POOL_ID, _vaultStorage.bakc, tokenIds_, recipient_);
+    }
+
+    // Withdraw Pending Funds
+    function withdrawPendingFunds(address recipient_) external override onlyAuthorized nonReentrant {
+        uint256 nativeBalance = address(this).balance;
+
+        // we must keep minimum gas fee in this contract
+        if (nativeBalance <= _vaultStorage.minGasFeeAmount) {
+            return;
+        }
+        nativeBalance -= _vaultStorage.minGasFeeAmount;
+
+        uint256 transferAmount;
+        if (nativeBalance > _vaultStorage.totalPendingFunds) {
+            transferAmount = _vaultStorage.totalPendingFunds;
+        } else {
+            transferAmount = nativeBalance;
+        }
+
+        _vaultStorage.totalPendingFunds -= transferAmount;
+
+        IWAPE(address(_vaultStorage.wrapApeCoin)).deposit{value: transferAmount}();
+        IERC20Upgradeable(address(_vaultStorage.wrapApeCoin)).transfer(recipient_, transferAmount);
+    }
+
+    function _stakerOf(address nft_, uint256 tokenId_) internal view returns (address) {
+        return _vaultStorage.nfts[nft_][tokenId_].staker;
+    }
+
+    function _ownerOf(address nft_, uint256 tokenId_) internal view returns (address) {
+        return _vaultStorage.nfts[nft_][tokenId_].owner;
+    }
+
+    function _increasePosition(address nft_, address staker_, uint256 stakedAmount_) internal {
+        INftVault.Position storage position_ = _vaultStorage.positions[nft_][staker_];
+        position_.stakedAmount += stakedAmount_;
+        position_.rewardsDebt += int256(
+            stakedAmount_ * _vaultStorage.apeCoinStaking.getNftPool(nft_).accumulatedRewardsPerShare
+        );
+    }
+
+    function _decreasePosition(address nft_, address staker_, uint256 stakedAmount_) internal {
+        INftVault.Position storage position_ = _vaultStorage.positions[nft_][staker_];
+        position_.stakedAmount -= stakedAmount_;
+        position_.rewardsDebt -= int256(
+            stakedAmount_ * _vaultStorage.apeCoinStaking.getNftPool(nft_).accumulatedRewardsPerShare
+        );
+    }
+
+    function _updateRewardsDebt(address nft_, address staker_, uint256 claimedRewardsAmount_) internal {
+        INftVault.Position storage position_ = _vaultStorage.positions[nft_][staker_];
+        position_.rewardsDebt += int256(claimedRewardsAmount_ * ApeStakingLib.APE_COIN_PRECISION);
     }
 }

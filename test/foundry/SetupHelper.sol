@@ -57,6 +57,7 @@ abstract contract SetupHelper is Test {
     MintableERC721 internal mockBAYC;
     MintableERC721 internal mockMAYC;
     MintableERC721 internal mockBAKC;
+    MockBeacon internal mockBeacon;
     ApeCoinStaking internal mockApeStaking;
     DelegationRegistry internal mockDelegationRegistry;
     MockBNFTRegistry internal mockBNFTRegistry;
@@ -113,7 +114,7 @@ abstract contract SetupHelper is Test {
         vm.roll(100);
 
         // mocked ape staking and config params
-        MockBeacon mockBeacon = new MockBeacon();
+        mockBeacon = new MockBeacon();
         mockApeStaking = new ApeCoinStaking(
             address(mockBeacon),
             address(mockBAYC),

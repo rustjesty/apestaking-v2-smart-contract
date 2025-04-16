@@ -466,42 +466,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "nft_",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "staker_",
-        "type": "address"
-      }
-    ],
-    "name": "refundOf",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "principal",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "reward",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct INftVault.Refund",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "delegate_",
         "type": "address"
       },
@@ -809,11 +773,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "nft_",
+        "name": "recipient_",
         "type": "address"
       }
     ],
-    "name": "withdrawRefunds",
+    "name": "withdrawPendingFunds",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -14,7 +14,7 @@ contract BendStakeManagerTester is BendStakeManager {
     }
 
     function distributeRewards(address nft_, uint256 rewardsAmount_) external {
-        _distributeRewards(nft_, rewardsAmount_);
+        _distributePrincipalAndRewards(nft_, 0, rewardsAmount_);
     }
 
     function totalPendingRewardsIncludeFee() external view returns (uint256 amount) {
@@ -26,41 +26,5 @@ contract BendStakeManagerTester is BendStakeManager {
 
     function pendingRewardsIncludeFee(uint256 poolId_) external view returns (uint256 amount) {
         amount = _pendingRewards(poolId_);
-    }
-
-    function refundOfIncludeFee(address nft_) external view onlyApe(nft_) returns (uint256 amount) {
-        (uint256 principal, uint256 reward) = _refundOf(nft_);
-        amount = principal + reward;
-    }
-
-    function refundOfExcludeFee(address nft_) external view onlyApe(nft_) returns (uint256 amount) {
-        (uint256 principal, uint256 reward) = _refundOf(nft_);
-        reward -= _calculateFee(reward);
-        amount = principal + reward;
-    }
-
-    function refundOfDetails(
-        address nft_
-    ) external view onlyApe(nft_) returns (uint256 principal, uint256 reward, uint256 fee) {
-        (principal, reward) = _refundOf(nft_);
-        fee = _calculateFee(reward);
-        reward -= fee;
-    }
-
-    function totalRefundIncludeFee() external view returns (uint256 amount) {
-        (uint256 principal, uint256 reward) = _totalRefund();
-        amount = principal + reward;
-    }
-
-    function totalRefundExcludeFee() external view returns (uint256 amount) {
-        (uint256 principal, uint256 reward) = _totalRefund();
-        reward -= _calculateFee(reward);
-        amount = principal + reward;
-    }
-
-    function totalRefundDetails() external view returns (uint256 principal, uint256 reward, uint256 fee) {
-        (principal, reward) = _totalRefund();
-        fee = _calculateFee(reward);
-        reward -= fee;
     }
 }

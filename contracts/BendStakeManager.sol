@@ -15,6 +15,7 @@ import {INftPool} from "./interfaces/INftPool.sol";
 import {IStakedNft} from "./interfaces/IStakedNft.sol";
 import {IRewardsStrategy} from "./interfaces/IRewardsStrategy.sol";
 import {IWithdrawStrategy} from "./interfaces/IWithdrawStrategy.sol";
+import {IWAPE} from "./interfaces/IWAPE.sol";
 
 import {ApeStakingLib} from "./libraries/ApeStakingLib.sol";
 
@@ -49,6 +50,12 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
         address mayc;
         address bakc;
         address botAdmin;
+        mapping(address => PendingFund) pendingFunds;
+    }
+    struct PendingFund {
+        uint256 principal;
+        uint256 nftRewards;
+        uint256 coinRewards;
     }
     StakerStorage internal _stakerStorage;
 
@@ -278,64 +285,10 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
     }
 
     function _prepareApeCoin(uint256 requiredAmount_) internal {
-        uint256 pendingApeCoin = _stakerStorage.coinPool.pendingApeCoin();
-        if (pendingApeCoin >= requiredAmount_) {
-            _stakerStorage.coinPool.pullApeCoin(requiredAmount_);
-        } else {
-            if (_pendingRewards(ApeStakingLib.APE_COIN_POOL_ID) > 0) {
-                _claimApeCoin();
-                pendingApeCoin = _stakerStorage.coinPool.pendingApeCoin();
-            }
-            if (pendingApeCoin < requiredAmount_) {
-                uint256 unstakeAmount = requiredAmount_ - pendingApeCoin;
-
-                if (_stakedApeCoin(ApeStakingLib.APE_COIN_POOL_ID) >= unstakeAmount) {
-                    _unstakeApeCoin(unstakeAmount);
-                }
-            }
-            _stakerStorage.coinPool.pullApeCoin(requiredAmount_);
-        }
+        _stakerStorage.coinPool.pullApeCoin(requiredAmount_);
     }
 
     // ApeCoin Pool which not exist on ApeChain
-
-    function _stakeApeCoin(uint256 amount_) internal {
-        // _stakerStorage.coinPool.pullApeCoin(amount_);
-        // _stakerStorage.apeCoinStaking.depositSelfApeCoin(amount_);
-        // _stakerStorage.apeCoinPoolStakedAmount += amount_;
-    }
-
-    function stakeApeCoin(uint256 amount_) external override onlyBot {
-        _stakeApeCoin(amount_);
-    }
-
-    function _unstakeApeCoin(uint256 amount_) internal {
-        // uint256 receivedApeCoin = _stakerStorage.wrapApeCoin.balanceOf(address(this));
-        // _stakerStorage.apeCoinStaking.withdrawSelfApeCoin(amount_);
-        // receivedApeCoin = _stakerStorage.apeCoin.balanceOf(address(this)) - receivedApeCoin;
-        // _stakerStorage.apeCoinPoolStakedAmount -= amount_;
-        // if (receivedApeCoin > amount_) {
-        //     receivedApeCoin -= _collectFee(receivedApeCoin - amount_);
-        // }
-        // uint256 rewardsAmount = receivedApeCoin - amount_;
-        // _stakerStorage.coinPool.receiveApeCoin(amount_, rewardsAmount);
-    }
-
-    function unstakeApeCoin(uint256 amount_) external override onlyWithdrawStrategyOrBot {
-        _unstakeApeCoin(amount_);
-    }
-
-    function _claimApeCoin() internal {
-        // uint256 rewardsAmount = _stakerStorage.wrapApeCoin.balanceOf(address(this));
-        // _stakerStorage.apeCoinStaking.claimSelfApeCoin();
-        // rewardsAmount = _stakerStorage.apeCoin.balanceOf(address(this)) - rewardsAmount;
-        // rewardsAmount -= _collectFee(rewardsAmount);
-        // _stakerStorage.coinPool.receiveApeCoin(0, rewardsAmount);
-    }
-
-    function claimApeCoin() external override onlyWithdrawStrategyOrBot {
-        _claimApeCoin();
-    }
 
     // Desposit NFTs
     function depositNft(
@@ -388,19 +341,13 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
             amounts_[i] = _stakerStorage.apeCoinStaking.getNftPosition(nft_, tokenIds_[i]).stakedAmount;
         }
 
-        uint256 receivedAmount = _stakerStorage.wrapApeCoin.balanceOf(address(this));
         (uint256 principalAmount, uint256 rewardsAmount) = _stakerStorage.nftVault.unstakeBaycPool(
             tokenIds_,
             amounts_,
             address(this)
         );
-        receivedAmount = _stakerStorage.wrapApeCoin.balanceOf(address(this)) - receivedAmount;
-        require(receivedAmount == (principalAmount + rewardsAmount), "BendStakeManager: unstake bayc error");
 
-        _stakerStorage.coinPool.receiveApeCoin(principalAmount, 0);
-
-        rewardsAmount -= _collectFee(rewardsAmount);
-        _distributeRewards(nft_, rewardsAmount);
+        _distributePrincipalAndRewards(nft_, principalAmount, rewardsAmount);
     }
 
     function unstakeBayc(uint256[] calldata tokenIds_) external override onlyWithdrawStrategyOrBot {
@@ -408,13 +355,10 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
     }
 
     function _claimBayc(uint256[] calldata tokenIds_) internal {
-        uint256 rewardsAmount = _stakerStorage.wrapApeCoin.balanceOf(address(this));
         address nft_ = _stakerStorage.bayc;
-        _stakerStorage.nftVault.claimBaycPool(tokenIds_, address(this));
-        rewardsAmount = _stakerStorage.wrapApeCoin.balanceOf(address(this)) - rewardsAmount;
+        uint256 rewardsAmount = _stakerStorage.nftVault.claimBaycPool(tokenIds_, address(this));
 
-        rewardsAmount -= _collectFee(rewardsAmount);
-        _distributeRewards(nft_, rewardsAmount);
+        _distributePrincipalAndRewards(nft_, 0, rewardsAmount);
     }
 
     function claimBayc(uint256[] calldata tokenIds_) external override onlyWithdrawStrategyOrBot {
@@ -448,21 +392,13 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
             amounts_[i] = _stakerStorage.apeCoinStaking.getNftPosition(nft_, tokenIds_[i]).stakedAmount;
         }
 
-        uint256 receivedAmount = _stakerStorage.wrapApeCoin.balanceOf(address(this));
         (uint256 principalAmount, uint256 rewardsAmount) = _stakerStorage.nftVault.unstakeMaycPool(
             tokenIds_,
             amounts_,
             address(this)
         );
-        receivedAmount = _stakerStorage.wrapApeCoin.balanceOf(address(this)) - receivedAmount;
-        require(receivedAmount == (principalAmount + rewardsAmount), "BendStakeManager: unstake mayc error");
 
-        // return principao to ape coin pool
-        _stakerStorage.coinPool.receiveApeCoin(principalAmount, 0);
-        rewardsAmount -= _collectFee(rewardsAmount);
-
-        // distribute mayc rewardsAmount
-        _distributeRewards(nft_, rewardsAmount);
+        _distributePrincipalAndRewards(nft_, principalAmount, rewardsAmount);
     }
 
     function unstakeMayc(uint256[] calldata tokenIds_) external override onlyWithdrawStrategyOrBot {
@@ -470,13 +406,10 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
     }
 
     function _claimMayc(uint256[] calldata tokenIds_) internal {
-        uint256 rewardsAmount = _stakerStorage.wrapApeCoin.balanceOf(address(this));
         address nft_ = _stakerStorage.mayc;
-        _stakerStorage.nftVault.claimMaycPool(tokenIds_, address(this));
-        rewardsAmount = _stakerStorage.wrapApeCoin.balanceOf(address(this)) - rewardsAmount;
+        uint256 rewardsAmount = _stakerStorage.nftVault.claimMaycPool(tokenIds_, address(this));
 
-        rewardsAmount -= _collectFee(rewardsAmount);
-        _distributeRewards(nft_, rewardsAmount);
+        _distributePrincipalAndRewards(nft_, 0, rewardsAmount);
     }
 
     function claimMayc(uint256[] calldata tokenIds_) external override onlyWithdrawStrategyOrBot {
@@ -512,21 +445,13 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
             amounts_[i] = _stakerStorage.apeCoinStaking.getNftPosition(nft_, tokenIds_[i]).stakedAmount;
         }
 
-        uint256 receivedAmount = _stakerStorage.wrapApeCoin.balanceOf(address(this));
         (uint256 principalAmount, uint256 rewardsAmount) = _stakerStorage.nftVault.unstakeBakcPool(
             tokenIds_,
             amounts_,
             address(this)
         );
-        receivedAmount = _stakerStorage.wrapApeCoin.balanceOf(address(this)) - receivedAmount;
-        require(receivedAmount == (principalAmount + rewardsAmount), "BendStakeManager: unstake bakc error");
 
-        // return principao to ape coin pool
-        _stakerStorage.coinPool.receiveApeCoin(principalAmount, 0);
-        rewardsAmount -= _collectFee(rewardsAmount);
-
-        // distribute bakc rewardsAmount
-        _distributeRewards(nft_, rewardsAmount);
+        _distributePrincipalAndRewards(nft_, principalAmount, rewardsAmount);
     }
 
     function unstakeBakc(uint256[] calldata tokenIds_) external override onlyWithdrawStrategyOrBot {
@@ -534,93 +459,104 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
     }
 
     function _claimBakc(uint256[] calldata tokenIds_) internal {
-        uint256 rewardsAmount = _stakerStorage.wrapApeCoin.balanceOf(address(this));
         address nft_ = _stakerStorage.bakc;
-        _stakerStorage.nftVault.claimBakcPool(tokenIds_, address(this));
-        rewardsAmount = _stakerStorage.wrapApeCoin.balanceOf(address(this)) - rewardsAmount;
+        uint256 rewardsAmount = _stakerStorage.nftVault.claimBakcPool(tokenIds_, address(this));
 
-        rewardsAmount -= _collectFee(rewardsAmount);
-        _distributeRewards(nft_, rewardsAmount);
+        _distributePrincipalAndRewards(nft_, 0, rewardsAmount);
     }
 
     function claimBakc(uint256[] calldata tokenIds_) external override onlyWithdrawStrategyOrBot {
         _claimBakc(tokenIds_);
     }
 
-    // Refunds & Rewards
+    // Rewards
 
-    function _withdrawRefund(address nft_) internal {
-        INftVault.Refund memory refund = _stakerStorage.nftVault.refundOf(nft_, address(this));
-        _stakerStorage.nftVault.withdrawRefunds(nft_);
-        if (refund.principal > 0) {
-            _stakerStorage.coinPool.receiveApeCoin(refund.principal, 0);
+    function _distributePrincipalAndRewards(address nft_, uint256 principalAmount, uint256 rewardsAmount) internal {
+        uint256 remainApeBalance = _stakerStorage.wrapApeCoin.balanceOf(address(this));
+        if (remainApeBalance > _stakerStorage.pendingFeeAmount) {
+            remainApeBalance = remainApeBalance - _stakerStorage.pendingFeeAmount;
+        } else {
+            remainApeBalance = 0;
         }
-        if (refund.reward > 0) {
-            uint256 rewardsAmount = refund.reward - _collectFee(refund.reward);
-            _distributeRewards(nft_, rewardsAmount);
-        }
+
+        remainApeBalance = _distributePrincipal(nft_, principalAmount, remainApeBalance);
+
+        remainApeBalance = _distributeRewards(nft_, rewardsAmount, remainApeBalance);
     }
 
-    function withdrawRefund(address nft_) external override onlyWithdrawStrategyOrBot {
-        _withdrawRefund(nft_);
+    function _distributePrincipal(
+        address nft_,
+        uint256 principalAmount,
+        uint256 remainApeBalance
+    ) internal returns (uint256) {
+        if (principalAmount > 0) {
+            _stakerStorage.pendingFunds[nft_].principal += principalAmount;
+        }
+
+        uint256 receivedAmount;
+        if (remainApeBalance >= _stakerStorage.pendingFunds[nft_].principal) {
+            receivedAmount = _stakerStorage.pendingFunds[nft_].principal;
+        } else {
+            receivedAmount = remainApeBalance;
+        }
+        if (receivedAmount > 0) {
+            remainApeBalance -= receivedAmount;
+            _stakerStorage.pendingFunds[nft_].principal -= receivedAmount;
+            _stakerStorage.coinPool.receiveApeCoin(receivedAmount, 0);
+        }
+
+        return remainApeBalance;
     }
 
-    function _distributeRewards(address nft_, uint256 rewardsAmount_) internal {
+    function _distributeRewards(
+        address nft_,
+        uint256 rewardsAmount_,
+        uint256 remainApeBalance
+    ) internal returns (uint256) {
         require(
             address(_stakerStorage.rewardsStrategies[nft_]) != address(0),
             "BendStakeManager: reward strategy can't be zero address"
         );
         uint256 nftShare = _stakerStorage.rewardsStrategies[nft_].getNftRewardsShare();
         require(nftShare < PERCENTAGE_FACTOR, "BendStakeManager: nft share is too high");
-        uint256 nftPoolRewards = rewardsAmount_.mulDiv(nftShare, PERCENTAGE_FACTOR, MathUpgradeable.Rounding.Down);
 
-        uint256 apeCoinPoolRewards = rewardsAmount_ - nftPoolRewards;
-        _stakerStorage.coinPool.receiveApeCoin(0, apeCoinPoolRewards);
-        _stakerStorage.nftPool.receiveApeCoin(nft_, nftPoolRewards);
-    }
+        if (rewardsAmount_ > 0) {
+            rewardsAmount_ -= _collectFee(rewardsAmount_);
 
-    function _withdrawTotalRefund() internal {
-        _withdrawRefund(_stakerStorage.bayc);
-        _withdrawRefund(_stakerStorage.mayc);
-        _withdrawRefund(_stakerStorage.bakc);
-    }
+            uint256 nftPoolRewards = rewardsAmount_.mulDiv(nftShare, PERCENTAGE_FACTOR, MathUpgradeable.Rounding.Down);
+            uint256 apeCoinPoolRewards = rewardsAmount_ - nftPoolRewards;
 
-    function withdrawTotalRefund() external override onlyWithdrawStrategyOrBot {
-        _withdrawTotalRefund();
-    }
-
-    function _refundOf(address nft_) internal view returns (uint256 principal, uint256 reward) {
-        INftVault.Refund memory refund = _stakerStorage.nftVault.refundOf(nft_, address(this));
-        principal = refund.principal;
-        reward = refund.reward;
-    }
-
-    function refundOf(address nft_) external view onlyApe(nft_) returns (uint256 principal, uint256 reward) {
-        (principal, reward) = _refundOf(nft_);
-        if (_stakerStorage.fee > 0) {
-            reward -= _calculateFee(reward);
+            _stakerStorage.pendingFunds[nft_].nftRewards += nftPoolRewards;
+            _stakerStorage.pendingFunds[nft_].coinRewards += apeCoinPoolRewards;
         }
-    }
 
-    function _totalRefund() internal view returns (uint256 principal, uint256 reward) {
-        INftVault.Refund memory refund_ = _stakerStorage.nftVault.refundOf(_stakerStorage.bayc, address(this));
-        principal += refund_.principal;
-        reward += refund_.reward;
+        uint256 receivedAmount;
 
-        refund_ = _stakerStorage.nftVault.refundOf(_stakerStorage.mayc, address(this));
-        principal += refund_.principal;
-        reward += refund_.reward;
-
-        refund_ = _stakerStorage.nftVault.refundOf(_stakerStorage.bakc, address(this));
-        principal += refund_.principal;
-        reward += refund_.reward;
-    }
-
-    function totalRefund() external view override returns (uint256 principal, uint256 reward) {
-        (principal, reward) = _totalRefund();
-        if (_stakerStorage.fee > 0) {
-            reward -= _calculateFee(reward);
+        // rewards for coin pool
+        if (remainApeBalance >= _stakerStorage.pendingFunds[nft_].coinRewards) {
+            receivedAmount = _stakerStorage.pendingFunds[nft_].coinRewards;
+        } else {
+            receivedAmount = remainApeBalance;
         }
+        if (receivedAmount > 0) {
+            remainApeBalance -= receivedAmount;
+            _stakerStorage.pendingFunds[nft_].coinRewards -= receivedAmount;
+            _stakerStorage.coinPool.receiveApeCoin(0, receivedAmount);
+        }
+
+        // rewards for nft pool
+        if (remainApeBalance >= _stakerStorage.pendingFunds[nft_].nftRewards) {
+            receivedAmount = _stakerStorage.pendingFunds[nft_].nftRewards;
+        } else {
+            receivedAmount = remainApeBalance;
+        }
+        if (receivedAmount > 0) {
+            remainApeBalance -= receivedAmount;
+            _stakerStorage.pendingFunds[nft_].nftRewards -= receivedAmount;
+            _stakerStorage.nftPool.receiveApeCoin(nft_, receivedAmount);
+        }
+
+        return remainApeBalance;
     }
 
     // Compound Methods
@@ -635,30 +571,22 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
         _compoudNftPool();
     }
 
+    function _distributePendingFunds() internal {
+        _stakerStorage.nftVault.withdrawPendingFunds(address(this));
+
+        _distributePrincipalAndRewards(_stakerStorage.bayc, 0, 0);
+        _distributePrincipalAndRewards(_stakerStorage.mayc, 0, 0);
+        _distributePrincipalAndRewards(_stakerStorage.bakc, 0, 0);
+    }
+
+    function distributePendingFunds() external onlyBot {
+        _distributePendingFunds();
+    }
+
     function compound(CompoundArgs calldata args_) external override nonReentrant onlyBot {
         uint256 claimedNfts;
 
-        // withdraw refunds which caused by users active burn the staked NFT
-        address nft_ = _stakerStorage.bayc;
-        (uint256 principal, uint256 reward) = _refundOf(nft_);
-        if (principal > 0 || reward > 0) {
-            _withdrawRefund(nft_);
-        }
-        nft_ = _stakerStorage.mayc;
-        (principal, reward) = _refundOf(nft_);
-        if (principal > 0 || reward > 0) {
-            _withdrawRefund(nft_);
-        }
-        nft_ = _stakerStorage.bakc;
-        (principal, reward) = _refundOf(nft_);
-        if (principal > 0 || reward > 0) {
-            _withdrawRefund(nft_);
-        }
-
-        // claim rewards from coin pool
-        if (args_.claimCoinPool) {
-            _claimApeCoin();
-        }
+        _distributePendingFunds();
 
         // claim rewards from NFT pool
         if (args_.claim.bayc.length > 0) {
@@ -734,11 +662,6 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
 
         // compound ape coin in nft pool
         _compoudNftPool();
-
-        // stake ape coin to coin pool
-        if (_stakerStorage.coinPool.pendingApeCoin() >= args_.coinStakeThreshold) {
-            _stakeApeCoin(_stakerStorage.coinPool.pendingApeCoin());
-        }
 
         // transfer fee to recipient
         if (_stakerStorage.pendingFeeAmount > MAX_PENDING_FEE && _stakerStorage.feeRecipient != address(0)) {

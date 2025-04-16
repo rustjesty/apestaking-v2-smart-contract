@@ -73,7 +73,7 @@ export const BEACON: Params<string> = {
 export const APE_STAKING: Params<string> = {
   [Network.mainnet]: "",
   [Network.sepolia]: "",
-  [Network.apechain]: "",
+  [Network.apechain]: "0x4ba2396086d52ca68a37d9c0fa364286e9c7835a",
   [Network.curtis]: "0x830e8e47591F9eB047efde3b2A8E2F13e9235EC6",
 };
 

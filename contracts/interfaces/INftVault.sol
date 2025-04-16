@@ -26,8 +26,6 @@ interface INftVault is IERC721ReceiverUpgradeable {
     struct VaultStorage {
         // nft address =>  nft tokenId => nftStatus
         mapping(address => mapping(uint256 => NftStatus)) nfts;
-        // nft address => staker address => refund
-        mapping(address => mapping(address => Refund)) refunds;
         // nft address => staker address => position
         mapping(address => mapping(address => Position)) positions;
         // nft address => staker address => staking nft tokenId array
@@ -40,12 +38,10 @@ interface INftVault is IERC721ReceiverUpgradeable {
         IDelegationRegistry delegationRegistry;
         mapping(address => bool) authorized;
         IDelegateRegistryV2 delegationRegistryV2;
+        uint256 minGasFeeAmount;
+        uint256 totalPendingFunds;
     }
 
-    struct Refund {
-        uint256 principal;
-        uint256 reward;
-    }
     struct Position {
         uint256 stakedAmount;
         int256 rewardsDebt;
@@ -56,8 +52,6 @@ interface INftVault is IERC721ReceiverUpgradeable {
     function stakerOf(address nft_, uint256 tokenId_) external view returns (address);
 
     function ownerOf(address nft_, uint256 tokenId_) external view returns (address);
-
-    function refundOf(address nft_, address staker_) external view returns (Refund memory);
 
     function positionOf(address nft_, address staker_) external view returns (Position memory);
 
@@ -93,9 +87,6 @@ interface INftVault is IERC721ReceiverUpgradeable {
     // withdraw nft
     function withdrawNft(address nft_, uint256[] calldata tokenIds_) external;
 
-    // staker withdraw ape coin
-    function withdrawRefunds(address nft_) external;
-
     // stake
     function stakeBaycPool(uint256[] calldata tokenIds_, uint256[] calldata amounts_) external;
 
@@ -128,4 +119,6 @@ interface INftVault is IERC721ReceiverUpgradeable {
     function claimMaycPool(uint256[] calldata tokenIds_, address recipient_) external returns (uint256 rewards);
 
     function claimBakcPool(uint256[] calldata tokenIds_, address recipient_) external returns (uint256 rewards);
+
+    function withdrawPendingFunds(address recipient_) external;
 }

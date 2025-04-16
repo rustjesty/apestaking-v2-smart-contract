@@ -61,6 +61,8 @@ interface IApeCoinStaking {
         bytes32 guid
     ) external view returns (uint8 poolId, uint8 requestType, address caller, address recipient, uint96 numNfts);
 
+    function quoteRequest(uint256 poolId, uint256[] calldata tokenIds) external view returns (uint256 fee);
+
     // public write methods
     function deposit(uint256 poolId, uint256[] calldata tokenIds, uint256[] calldata amounts) external payable;
 
