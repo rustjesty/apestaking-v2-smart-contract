@@ -84,6 +84,10 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
         wrapApeCoin.approve(address(coinPool), type(uint256).max);
     }
 
+    function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
+        apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
+    }
+
     function deposit(
         address[] calldata nfts_,
         uint256[][] calldata tokenIds_,
@@ -372,9 +376,5 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
         v2AddressProvider = IAddressProviderV2(v2Provider_);
         v2PoolManager = v2AddressProvider.getPoolManager();
         v2PoolLens = IPoolLensV2(v2AddressProvider.getPoolModuleProxy(MODULEID__POOL_LENS));
-    }
-
-    function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
-        apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
     }
 }

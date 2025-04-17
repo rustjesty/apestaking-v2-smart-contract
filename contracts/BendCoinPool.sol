@@ -46,6 +46,10 @@ contract BendCoinPool is
         staker = staker_;
     }
 
+    function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
+        apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
+    }
+
     function getWrapApeCoin() external view override returns (address) {
         return address(wrapApeCoin);
     }
@@ -169,9 +173,5 @@ contract BendCoinPool is
         } else {
             _unpause();
         }
-    }
-
-    function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
-        apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
     }
 }

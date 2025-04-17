@@ -64,11 +64,11 @@
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "DefaultWithdrawStrategy": {
-    "address": "0xE21d86a69af5b14548890F04247596FE63FbF7BF",
+    "address": "0x43e451A231C9013dE0231C31FF556766df5E954F",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "PoolViewer": {
-    "address": "0x4f10b87D37073a6e2B1C944C1A4b671944ADF758",
+    "address": "0xA4aa1fc12FeDDD29d8b1393A700a17BE2f891231",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   }
 }

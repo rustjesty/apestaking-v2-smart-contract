@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.18;
 
-import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeCastUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {IApeCoinStaking} from "../interfaces/IApeCoinStaking.sol";
 import {INftVault} from "../interfaces/INftVault.sol";
@@ -15,10 +15,10 @@ import {IWithdrawStrategy} from "../interfaces/IWithdrawStrategy.sol";
 
 import {ApeStakingLib} from "../libraries/ApeStakingLib.sol";
 
-contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuardUpgradeable, OwnableUpgradeable {
+contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuard, Ownable {
     using ApeStakingLib for IApeCoinStaking;
-    using SafeCastUpgradeable for uint256;
-    using SafeCastUpgradeable for uint248;
+    using SafeCast for uint256;
+    using SafeCast for uint248;
 
     IApeCoinStaking public apeCoinStaking;
     IERC20 public wrapApeCoin;
@@ -35,13 +35,26 @@ contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuardUpgradeabl
         _;
     }
 
-    constructor(IApeCoinStaking apeCoinStaking_, INftVault nftVault_, ICoinPool coinPool_, IStakeManager staker_) {
+    constructor(
+        IApeCoinStaking apeCoinStaking_,
+        INftVault nftVault_,
+        ICoinPool coinPool_,
+        IStakeManager staker_
+    ) Ownable() {
         apeCoinStaking = apeCoinStaking_;
         nftVault = nftVault_;
         coinPool = coinPool_;
         staker = staker_;
 
         wrapApeCoin = IERC20(coinPool.getWrapApeCoin());
+        bayc = address(apeCoinStaking.bayc());
+        mayc = address(apeCoinStaking.mayc());
+        bakc = address(apeCoinStaking.bakc());
+    }
+
+    function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
+        apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
+
         bayc = address(apeCoinStaking.bayc());
         mayc = address(apeCoinStaking.mayc());
         bakc = address(apeCoinStaking.bakc());
@@ -194,9 +207,5 @@ contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuardUpgradeabl
 
     function _changedBalance(address recipient_, uint256 initBalance_) internal view returns (uint256) {
         return wrapApeCoin.balanceOf(recipient_) - initBalance_;
-    }
-
-    function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
-        apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
     }
 }

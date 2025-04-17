@@ -59,6 +59,15 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         _vaultStorage.minGasFeeAmount = 20 * ApeStakingLib.APE_COIN_PRECISION;
     }
 
+    function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
+        _vaultStorage.apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
+
+        _vaultStorage.bayc = address(_vaultStorage.apeCoinStaking.bayc());
+        _vaultStorage.mayc = address(_vaultStorage.apeCoinStaking.mayc());
+        _vaultStorage.bakc = address(_vaultStorage.apeCoinStaking.bakc());
+        _vaultStorage.wrapApeCoin.approve(address(_vaultStorage.apeCoinStaking), type(uint256).max);
+    }
+
     receive() external payable {
         require(
             (msg.sender == address(_vaultStorage.wrapApeCoin)) || (msg.sender == address(_vaultStorage.apeCoinStaking)),
@@ -125,10 +134,6 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     function authorise(address addr_, bool authorized_) external override onlyOwner {
         _vaultStorage.authorized[addr_] = authorized_;
-    }
-
-    function setApeCoinStaking(address apeCoinStaking_) external onlyOwner {
-        _vaultStorage.apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
     }
 
     function setDelegateCash(

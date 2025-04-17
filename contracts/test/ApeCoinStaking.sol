@@ -227,6 +227,16 @@ contract ApeCoinStaking is IShadowCallbackReceiver, Ownable {
         _initializeOwner(msg.sender);
     }
 
+    function setNftContracts(
+        address _baycContractAddress,
+        address _maycContractAddress,
+        address _bakcContractAddress
+    ) public onlyOwner {
+        nftContracts[_BAYC_POOL_ID] = INFTShadow(_baycContractAddress);
+        nftContracts[_MAYC_POOL_ID] = INFTShadow(_maycContractAddress);
+        nftContracts[_BAKC_POOL_ID] = INFTShadow(_bakcContractAddress);
+    }
+
     modifier validPool(uint256 poolId) {
         if (poolId > _BAKC_POOL_ID || poolId < _BAYC_POOL_ID) {
             revert InvalidPoolId();

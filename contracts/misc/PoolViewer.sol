@@ -77,6 +77,10 @@ contract PoolViewer is Ownable {
 
     function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
         apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
+
+        bayc = address(apeCoinStaking.bayc());
+        mayc = address(apeCoinStaking.mayc());
+        bakc = address(apeCoinStaking.bakc());
     }
 
     function setBendV2AddressProvider(IAddressProviderV2 v2AddressProvider_) public onlyOwner {

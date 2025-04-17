@@ -125,6 +125,11 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
         IERC721Upgradeable(_stakerStorage.bakc).setApprovalForAll(address(_stakerStorage.stBakc), true);
     }
 
+    function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
+        _stakerStorage.apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
+        _stakerStorage.wrapApeCoin.approve(address(_stakerStorage.apeCoinStaking), type(uint256).max);
+    }
+
     receive() external payable {
         require(
             (msg.sender == address(_stakerStorage.wrapApeCoin) ||
@@ -173,10 +178,6 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
         require(botAdmin_ != address(0), "BendStakeManager: invalid bot admin");
         _stakerStorage.botAdmin = botAdmin_;
         emit BotAdminChanged(botAdmin_);
-    }
-
-    function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
-        _stakerStorage.apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
     }
 
     function updateRewardsStrategy(
