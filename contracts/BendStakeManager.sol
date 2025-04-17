@@ -175,6 +175,10 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
         emit BotAdminChanged(botAdmin_);
     }
 
+    function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
+        _stakerStorage.apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
+    }
+
     function updateRewardsStrategy(
         address nft_,
         IRewardsStrategy rewardsStrategy_

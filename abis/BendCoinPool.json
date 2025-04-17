@@ -856,6 +856,19 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "apeCoinStaking_",
+        "type": "address"
+      }
+    ],
+    "name": "setApeCoinStaking",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bool",
         "name": "flag",
         "type": "bool"

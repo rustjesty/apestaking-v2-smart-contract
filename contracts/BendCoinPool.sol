@@ -170,4 +170,8 @@ contract BendCoinPool is
             _unpause();
         }
     }
+
+    function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
+        apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
+    }
 }

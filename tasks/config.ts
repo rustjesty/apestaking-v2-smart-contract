@@ -74,7 +74,7 @@ export const APE_STAKING: Params<string> = {
   [Network.mainnet]: "",
   [Network.sepolia]: "",
   [Network.apechain]: "0x4ba2396086d52ca68a37d9c0fa364286e9c7835a",
-  [Network.curtis]: "0x830e8e47591F9eB047efde3b2A8E2F13e9235EC6",
+  [Network.curtis]: "0xBd5d321ccCed522F11418d81f0f08DbCB66615A4",
 };
 
 export const BAYC: Params<string> = {

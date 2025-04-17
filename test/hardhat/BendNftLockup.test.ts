@@ -123,6 +123,8 @@ makeSuite("BendNftLockup", (contracts: Contracts, env: Env, snapshots: Snapshots
   });
 
   it("finalize: bayc", async () => {
+    await advanceHours(1);
+
     await contracts.bendNftLockup.connect(bot).finalize([contracts.bayc.address], [baycTokenIds], owner.address);
 
     for (const id of baycTokenIds) {
@@ -179,6 +181,8 @@ makeSuite("BendNftLockup", (contracts: Contracts, env: Env, snapshots: Snapshots
   });
 
   it("finalize: bayc & mayc & bakc", async () => {
+    await advanceHours(1);
+
     await contracts.bendNftLockup
       .connect(bot)
       .finalize(

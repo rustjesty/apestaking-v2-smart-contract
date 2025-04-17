@@ -4,6 +4,7 @@ pragma solidity 0.8.18;
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeCastUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 import {IApeCoinStaking} from "../interfaces/IApeCoinStaking.sol";
 import {INftVault} from "../interfaces/INftVault.sol";
@@ -14,7 +15,7 @@ import {IWithdrawStrategy} from "../interfaces/IWithdrawStrategy.sol";
 
 import {ApeStakingLib} from "../libraries/ApeStakingLib.sol";
 
-contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuardUpgradeable {
+contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuardUpgradeable, OwnableUpgradeable {
     using ApeStakingLib for IApeCoinStaking;
     using SafeCastUpgradeable for uint256;
     using SafeCastUpgradeable for uint248;
@@ -193,5 +194,9 @@ contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuardUpgradeabl
 
     function _changedBalance(address recipient_, uint256 initBalance_) internal view returns (uint256) {
         return wrapApeCoin.balanceOf(recipient_) - initBalance_;
+    }
+
+    function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
+        apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
     }
 }

@@ -40,14 +40,14 @@ contract PoolViewer is Ownable {
         uint256 bakcPoolRewards;
     }
 
-    IApeCoinStaking public immutable apeCoinStaking;
-    IStakeManager public immutable staker;
-    ICoinPool public immutable coinPool;
-    IBNFTRegistry public immutable bnftRegistry;
+    IApeCoinStaking public apeCoinStaking;
+    IStakeManager public staker;
+    ICoinPool public coinPool;
+    IBNFTRegistry public bnftRegistry;
 
-    address public immutable bayc;
-    address public immutable mayc;
-    address public immutable bakc;
+    address public bayc;
+    address public mayc;
+    address public bakc;
     IAddressProviderV2 public v2AddressProvider;
     address public v2PoolManager;
     IPoolLensV2 public v2PoolLens;
@@ -73,6 +73,10 @@ contract PoolViewer is Ownable {
             v2PoolManager = v2AddressProvider.getPoolManager();
             v2PoolLens = IPoolLensV2(v2AddressProvider.getPoolModuleProxy(MODULEID__POOL_LENS));
         }
+    }
+
+    function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
+        apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
     }
 
     function setBendV2AddressProvider(IAddressProviderV2 v2AddressProvider_) public onlyOwner {

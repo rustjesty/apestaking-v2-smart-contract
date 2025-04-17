@@ -127,6 +127,10 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         _vaultStorage.authorized[addr_] = authorized_;
     }
 
+    function setApeCoinStaking(address apeCoinStaking_) external onlyOwner {
+        _vaultStorage.apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
+    }
+
     function setDelegateCash(
         address delegate_,
         address nft_,
