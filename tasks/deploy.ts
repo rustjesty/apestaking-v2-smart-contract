@@ -39,8 +39,8 @@ task("deploy:mock:Tokens", "Deploy Mock ApeCoinStaking").setAction(async (_, { n
   await run("set-DRE");
   await run("compile");
 
-  const wape = await deployContract("MockWAPE", [1069672766], true);
-  console.log("WAPE at:", wape.address);
+  // const wape = await deployContract("MockWAPE", [1069672766], true);
+  // console.log("WAPE at:", wape.address);
 
   const bayc = await deployContract("MintableERC721", ["MockBAYC", "BAYC"], true, "MockBAYC");
   const mayc = await deployContract("MintableERC721", ["MockMAYC", "MAYC"], true, "MockMAYC");

@@ -168,6 +168,10 @@ contract BendNftLockup is OwnableUpgradeable, ReentrancyGuardUpgradeable, Pausab
                 TokenData storage tokenData = nftTokenDatas[nft_][tokenId_];
                 require(tokenData.owner == owner_, "BendNftLockup: owner not match");
                 require(tokenData.status == STATUS_WITHDRAWING, "BendNftLockup: status not withdrawing");
+                require(
+                    uint40(block.timestamp) > (tokenData.lastOpTime + 5 minutes),
+                    "BendNftLockup: interval not enough"
+                );
 
                 delegationRegistryV2.delegateERC721(nftValut, nft_, tokenId_, nftShadowRights, false);
 

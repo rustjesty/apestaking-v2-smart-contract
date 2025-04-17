@@ -48,6 +48,20 @@ makeSuite("BendNftPool", (contracts: Contracts, env: Env, snapshots: Snapshots) 
     }
   });
 
+  it("onlyStaker: reverts", async () => {
+    await expect(contracts.bendNftPool.deposit([contracts.bayc.address], [baycTokenIds], owner.address)).revertedWith(
+      "BendNftPool: caller is not staker"
+    );
+
+    await expect(contracts.bendNftPool.withdraw([contracts.bayc.address], [baycTokenIds], owner.address)).revertedWith(
+      "BendNftPool: caller is not staker"
+    );
+
+    await expect(contracts.bendNftPool.compoundApeCoin(contracts.bayc.address)).revertedWith(
+      "BendNftPool: caller is not staker"
+    );
+  });
+
   it("deposit: preparing the first deposit", async () => {
     await contracts.wrapApeCoin.connect(env.feeRecipient).approve(contracts.bendCoinPool.address, constants.MaxUint256);
     await contracts.bendCoinPool.connect(env.feeRecipient).depositSelf(makeBN18(1));
