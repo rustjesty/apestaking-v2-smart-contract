@@ -67,14 +67,14 @@ export const BEACON: Params<string> = {
   [Network.mainnet]: "",
   [Network.sepolia]: "",
   [Network.apechain]: "0x00000000000087c6dbaDC090d39BC10316f20658",
-  [Network.curtis]: "0x554309B0888c37139D6E31aBAe30B4502915B5DB",
+  [Network.curtis]: "0x52912571414Db261E4122B0658037122dAe9718C",
 };
 
 export const APE_STAKING: Params<string> = {
   [Network.mainnet]: "",
   [Network.sepolia]: "",
   [Network.apechain]: "0x4ba2396086d52ca68a37d9c0fa364286e9c7835a",
-  [Network.curtis]: "0xBd5d321ccCed522F11418d81f0f08DbCB66615A4",
+  [Network.curtis]: "0x5350A3FFEDCb50775f425982a11E31E2Ba43F34B",
 };
 
 export const BAYC: Params<string> = {

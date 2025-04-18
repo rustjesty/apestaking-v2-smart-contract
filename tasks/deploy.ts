@@ -50,7 +50,7 @@ task("deploy:mock:Tokens", "Deploy Mock ApeCoinStaking").setAction(async (_, { n
   console.log("MockMAYC at:", mayc.address);
   console.log("MockBAKC at:", bakc.address);
 
-  console.log("Remember to set the address in the config file");
+  console.log("!!!Remember to set the address in the config file.!!!");
 });
 
 task("deploy:mock:ApeCoinStaking", "Deploy Mock ApeCoinStaking").setAction(async (_, { network, run }) => {
@@ -68,7 +68,7 @@ task("deploy:mock:ApeCoinStaking", "Deploy Mock ApeCoinStaking").setAction(async
   const apeStaking = await deployContract("ApeCoinStaking", [beacon, bayc, mayc, bakc], true);
   console.log("ApeCoinStaking at:", apeStaking.address);
 
-  console.log("Remember to set the address in the config file");
+  console.log("!!!Remember to set the address in the config file.!!!");
 });
 
 task("deploy:full:StakedNFT", "Deploy all contracts for staked nfts").setAction(async (_, { run }) => {

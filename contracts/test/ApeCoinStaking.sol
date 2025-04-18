@@ -227,6 +227,12 @@ contract ApeCoinStaking is IShadowCallbackReceiver, Ownable {
         _initializeOwner(msg.sender);
     }
 
+    // @dev Test only functions
+
+    function setBeacon(address beacon) public onlyOwner {
+        _beacon = IBeacon(beacon);
+    }
+
     function setNftContracts(
         address _baycContractAddress,
         address _maycContractAddress,
