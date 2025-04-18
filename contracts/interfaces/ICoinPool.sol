@@ -29,4 +29,6 @@ interface ICoinPool is IERC4626Upgradeable {
     function pullApeCoin(uint256 amount_) external;
 
     function receiveApeCoin(uint256 principalAmount, uint256 rewardsAmount_) external;
+
+    function compoundApeCoin() external;
 }

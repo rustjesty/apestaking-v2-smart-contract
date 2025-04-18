@@ -163,8 +163,18 @@ contract BendCoinPool is
     }
 
     function pullApeCoin(uint256 amount_) external override onlyStaker {
+        require(pendingApeCoin >= amount_, "BendCoinPool: not enough pending apecoin");
         pendingApeCoin -= amount_;
         wrapApeCoin.safeTransfer(address(staker), amount_);
+    }
+
+    function compoundApeCoin() external override onlyStaker {
+        // WAPE has native yield, we need distribute it to holders through rebalance.
+        // The pendingApeCoin should less or equal (<=) than WAPE balance.
+        // We can not remove pendingApeCoin field to avoid attack.
+        uint256 nativeBalance = wrapApeCoin.balanceOf(address(this));
+        require(pendingApeCoin <= nativeBalance, "BendCoinPool: pending apecoin not match native balance");
+        pendingApeCoin = nativeBalance;
     }
 
     function setPause(bool flag) public onlyOwner {

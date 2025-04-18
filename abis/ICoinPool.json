@@ -230,6 +230,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "compoundApeCoin",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",

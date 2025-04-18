@@ -268,15 +268,14 @@ makeSuite("BendNftPool", (contracts: Contracts, env: Env, snapshots: Snapshots) 
     const bacApeChanged = await contracts.bendCoinPool.convertToShares(pendingApeCoin.sub(claimable));
 
     console.log("expectClaim:before:getBalance", (await owner.getBalance()).toString());
+    const tx = await contracts.bendNftPool.connect(owner).claim([nft], [tokenIds]);
+    console.log("expectClaim:after:getBalance", (await owner.getBalance()).toString());
 
-    const tx = contracts.bendNftPool.connect(owner).claim([nft], [tokenIds]);
-    await expect(tx)
+    expect(tx)
       .changeEtherBalance(owner.address, claimable)
       .changeTokenBalances(contracts.wrapApeCoin, [contracts.bendNftPool.address], [constants.Zero.sub(pendingApeCoin)])
       .changeTokenBalance(contracts.bendCoinPool, contracts.bendNftPool.address, bacApeChanged);
-    expectIndexChanged((await tx).blockNumber || 0, pendingApeCoin, nft);
-
-    console.log("expectClaim:after:getBalance", (await owner.getBalance()).toString());
+    expectIndexChanged(tx.blockNumber || 0, pendingApeCoin, nft);
   };
 
   it("claim", async () => {
@@ -367,8 +366,12 @@ makeSuite("BendNftPool", (contracts: Contracts, env: Env, snapshots: Snapshots) 
     const bacApeChanged = await contracts.bendCoinPool.convertToShares(poolState.pendingApeCoin.sub(claimable));
 
     console.log("expectWithdraw:before:getBalance", (await owner.getBalance()).toString());
-    const tx = contracts.bendNftPool.connect(stakeManagerSigner).withdraw([nft.address], [tokenIds], owner.address);
-    await expect(tx)
+    const tx = await contracts.bendNftPool
+      .connect(stakeManagerSigner)
+      .withdraw([nft.address], [tokenIds], owner.address);
+    console.log("expectWithdraw:after:getBalance", (await owner.getBalance()).toString());
+
+    expect(tx)
       .changeEtherBalance(owner.address, claimable)
       .changeTokenBalances(
         contracts.wrapApeCoin,
@@ -376,9 +379,7 @@ makeSuite("BendNftPool", (contracts: Contracts, env: Env, snapshots: Snapshots) 
         [constants.Zero.sub(poolState.pendingApeCoin)]
       )
       .changeTokenBalance(contracts.bendCoinPool, contracts.bendNftPool.address, bacApeChanged);
-    expectIndexChanged((await tx).blockNumber || 0, poolState.pendingApeCoin, nft.address);
-
-    console.log("expectWithdraw:after:getBalance", (await owner.getBalance()).toString());
+    expectIndexChanged(tx.blockNumber || 0, poolState.pendingApeCoin, nft.address);
 
     for (const id of tokenIds) {
       await expect(stNft.ownerOf(id)).revertedWith("ERC721: invalid token ID");

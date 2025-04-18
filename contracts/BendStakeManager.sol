@@ -566,6 +566,14 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
 
     // Compound Methods
 
+    function _compoudApeCoinPool() internal {
+        _stakerStorage.coinPool.compoundApeCoin();
+    }
+
+    function compoudApeCoinPool() external onlyBot {
+        _compoudApeCoinPool();
+    }
+
     function _compoudNftPool() internal {
         _stakerStorage.nftPool.compoundApeCoin(_stakerStorage.bayc);
         _stakerStorage.nftPool.compoundApeCoin(_stakerStorage.mayc);
@@ -591,6 +599,11 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
     function compound(CompoundArgs calldata args_) external override nonReentrant onlyBot {
         uint256 claimedNfts;
 
+        // compound native yield in ape coin pool
+        _compoudApeCoinPool();
+
+        // distribute pending funds in nft vault
+        // which sent by the official ApeCoinStaking contract in async mode callback
         _distributePendingFunds();
 
         // claim rewards from NFT pool
