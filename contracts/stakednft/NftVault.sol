@@ -89,7 +89,9 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     receive() external payable {
         require(
-            (msg.sender == address(_vaultStorage.wrapApeCoin)) || (msg.sender == address(_vaultStorage.apeCoinStaking)),
+            (msg.sender == owner() ||
+                (msg.sender == address(_vaultStorage.wrapApeCoin)) ||
+                (msg.sender == address(_vaultStorage.apeCoinStaking))),
             "nftVault: invalid sender"
         );
     }
