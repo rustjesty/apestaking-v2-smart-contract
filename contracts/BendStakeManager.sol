@@ -31,6 +31,25 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
     uint256 public constant MAX_FEE = 1000;
     uint256 public constant MAX_PENDING_FEE = 100 * 1e18;
 
+    struct StakerStorageUI {
+        IWithdrawStrategy withdrawStrategy;
+        uint256 fee;
+        address feeRecipient;
+        uint256 pendingFeeAmount;
+        uint256 apeCoinPoolStakedAmount;
+        IApeCoinStaking apeCoinStaking;
+        IERC20Upgradeable wrapApeCoin;
+        INftVault nftVault;
+        ICoinPool coinPool;
+        INftPool nftPool;
+        IStakedNft stBayc;
+        IStakedNft stMayc;
+        IStakedNft stBakc;
+        address bayc;
+        address mayc;
+        address bakc;
+        address botAdmin;
+    }
     struct StakerStorage {
         mapping(address => IRewardsStrategy) rewardsStrategies;
         IWithdrawStrategy withdrawStrategy;
@@ -128,6 +147,32 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
     function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
         _stakerStorage.apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
         _stakerStorage.wrapApeCoin.approve(address(_stakerStorage.apeCoinStaking), type(uint256).max);
+    }
+
+    function getStakerStorageUI() public view returns (StakerStorageUI memory) {
+        StakerStorageUI memory stakerStorageUI;
+        stakerStorageUI.withdrawStrategy = _stakerStorage.withdrawStrategy;
+        stakerStorageUI.fee = _stakerStorage.fee;
+        stakerStorageUI.feeRecipient = _stakerStorage.feeRecipient;
+        stakerStorageUI.pendingFeeAmount = _stakerStorage.pendingFeeAmount;
+        stakerStorageUI.apeCoinPoolStakedAmount = _stakerStorage.apeCoinPoolStakedAmount;
+        stakerStorageUI.apeCoinStaking = _stakerStorage.apeCoinStaking;
+        stakerStorageUI.wrapApeCoin = _stakerStorage.wrapApeCoin;
+        stakerStorageUI.nftVault = _stakerStorage.nftVault;
+        stakerStorageUI.coinPool = _stakerStorage.coinPool;
+        stakerStorageUI.nftPool = _stakerStorage.nftPool;
+        stakerStorageUI.stBayc = _stakerStorage.stBayc;
+        stakerStorageUI.stMayc = _stakerStorage.stMayc;
+        stakerStorageUI.stBakc = _stakerStorage.stBakc;
+        stakerStorageUI.bayc = _stakerStorage.bayc;
+        stakerStorageUI.mayc = _stakerStorage.mayc;
+        stakerStorageUI.bakc = _stakerStorage.bakc;
+        stakerStorageUI.botAdmin = _stakerStorage.botAdmin;
+        return stakerStorageUI;
+    }
+
+    function getPendingFund(address nft_) public view returns (PendingFund memory) {
+        return _stakerStorage.pendingFunds[nft_];
     }
 
     receive() external payable {

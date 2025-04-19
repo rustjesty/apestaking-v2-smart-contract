@@ -42,6 +42,18 @@ interface INftVault is IERC721ReceiverUpgradeable {
         uint256 totalPendingFunds;
     }
 
+    struct VaultStorageUI {
+        IApeCoinStaking apeCoinStaking;
+        IERC20Upgradeable wrapApeCoin;
+        address bayc;
+        address mayc;
+        address bakc;
+        IDelegationRegistry delegationRegistry;
+        IDelegateRegistryV2 delegationRegistryV2;
+        uint256 minGasFeeAmount;
+        uint256 totalPendingFunds;
+    }
+
     struct Position {
         uint256 stakedAmount;
         int256 rewardsDebt;

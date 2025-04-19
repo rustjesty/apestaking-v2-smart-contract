@@ -348,6 +348,66 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getVaultStorageUI",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "contract IApeCoinStaking",
+            "name": "apeCoinStaking",
+            "type": "address"
+          },
+          {
+            "internalType": "contract IERC20Upgradeable",
+            "name": "wrapApeCoin",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "bayc",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "mayc",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "bakc",
+            "type": "address"
+          },
+          {
+            "internalType": "contract IDelegationRegistry",
+            "name": "delegationRegistry",
+            "type": "address"
+          },
+          {
+            "internalType": "contract IDelegateRegistryV2",
+            "name": "delegationRegistryV2",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minGasFeeAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalPendingFunds",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct INftVault.VaultStorageUI",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -615,6 +675,19 @@
       }
     ],
     "name": "setDelegationRegistryV2Contract",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gasFeeAmount_",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinGasFeeAmount",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

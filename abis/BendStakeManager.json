@@ -553,6 +553,142 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "nft_",
+        "type": "address"
+      }
+    ],
+    "name": "getPendingFund",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "principal",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "nftRewards",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "coinRewards",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct BendStakeManager.PendingFund",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getStakerStorageUI",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "contract IWithdrawStrategy",
+            "name": "withdrawStrategy",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "fee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "feeRecipient",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "pendingFeeAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "apeCoinPoolStakedAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "contract IApeCoinStaking",
+            "name": "apeCoinStaking",
+            "type": "address"
+          },
+          {
+            "internalType": "contract IERC20Upgradeable",
+            "name": "wrapApeCoin",
+            "type": "address"
+          },
+          {
+            "internalType": "contract INftVault",
+            "name": "nftVault",
+            "type": "address"
+          },
+          {
+            "internalType": "contract ICoinPool",
+            "name": "coinPool",
+            "type": "address"
+          },
+          {
+            "internalType": "contract INftPool",
+            "name": "nftPool",
+            "type": "address"
+          },
+          {
+            "internalType": "contract IStakedNft",
+            "name": "stBayc",
+            "type": "address"
+          },
+          {
+            "internalType": "contract IStakedNft",
+            "name": "stMayc",
+            "type": "address"
+          },
+          {
+            "internalType": "contract IStakedNft",
+            "name": "stBakc",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "bayc",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "mayc",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "bakc",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "botAdmin",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct BendStakeManager.StakerStorageUI",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "contract IApeCoinStaking",
         "name": "apeStaking_",
         "type": "address"

@@ -17,7 +17,7 @@ import "dotenv/config";
 import { Network, NETWORKS_RPC_URL } from "./tasks/config";
 
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || "";
-const ETHERSCAN_KEY_MAINNET = process.env.ETHERSCAN_KEY_MAINNET || "";
+const ETHERSCAN_KEY_APECHAIN = process.env.ETHERSCAN_KEY_APECHAIN || "";
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || "";
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
@@ -104,9 +104,9 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       sepolia: ETHERSCAN_KEY,
-      mainnet: ETHERSCAN_KEY_MAINNET,
+      mainnet: ETHERSCAN_KEY,
       curtis: ETHERSCAN_KEY,
-      apechain: ETHERSCAN_KEY,
+      apechain: ETHERSCAN_KEY_APECHAIN,
     },
     customChains: [
       {

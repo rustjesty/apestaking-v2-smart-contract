@@ -68,6 +68,25 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         _vaultStorage.wrapApeCoin.approve(address(_vaultStorage.apeCoinStaking), type(uint256).max);
     }
 
+    function setMinGasFeeAmount(uint256 gasFeeAmount_) public onlyOwner {
+        _vaultStorage.minGasFeeAmount = gasFeeAmount_;
+    }
+
+    function getVaultStorageUI() public view returns (VaultStorageUI memory) {
+        return
+            VaultStorageUI({
+                apeCoinStaking: _vaultStorage.apeCoinStaking,
+                wrapApeCoin: _vaultStorage.wrapApeCoin,
+                bayc: _vaultStorage.bayc,
+                mayc: _vaultStorage.mayc,
+                bakc: _vaultStorage.bakc,
+                delegationRegistry: _vaultStorage.delegationRegistry,
+                delegationRegistryV2: _vaultStorage.delegationRegistryV2,
+                minGasFeeAmount: _vaultStorage.minGasFeeAmount,
+                totalPendingFunds: _vaultStorage.totalPendingFunds
+            });
+    }
+
     receive() external payable {
         require(
             (msg.sender == address(_vaultStorage.wrapApeCoin)) || (msg.sender == address(_vaultStorage.apeCoinStaking)),
