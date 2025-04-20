@@ -8,15 +8,15 @@
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "MockBAYC": {
-    "address": "0xf4d6e94BDe83B59A72FecdDde686A3a132467C3E",
+    "address": "0x52f51701ed1B560108fF71862330f9C8b4a15c8e",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "MockMAYC": {
-    "address": "0xbAeF87A73eC0bf1ecc5d230Db9c456F2C8fA54eb",
+    "address": "0x35e13d4545Dd3935F87a056495b5Bae4f3aB9049",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "MockBAKC": {
-    "address": "0xE82FdAEd5aa1D5667f9E3eaA55226Dbf6e92d910",
+    "address": "0xFe94A8d9260a96e6da8BD6BfA537b49E73791567",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   },
   "ApeCoinStaking": {

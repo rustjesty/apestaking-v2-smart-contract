@@ -573,6 +573,29 @@
   {
     "inputs": [
       {
+        "internalType": "contract IStakedNft",
+        "name": "stBayc_",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IStakedNft",
+        "name": "stMayc_",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IStakedNft",
+        "name": "stBakc_",
+        "type": "address"
+      }
+    ],
+    "name": "setStNftAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "v2Provider_",
         "type": "address"

@@ -95,7 +95,7 @@ contract MintableERC721 is ERC721Enumerable, Ownable {
     }
 
     function getNextGUID() public view returns (bytes32) {
-        return keccak256(abi.encodePacked(nextReadId));
+        return keccak256(abi.encodePacked(address(this), nextReadId));
     }
 
     function locked(uint256 tokenId) public view returns (bool) {

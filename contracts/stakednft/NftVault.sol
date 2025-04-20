@@ -401,16 +401,13 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         // claim rewards from staking, and wrap ape coin
         uint256 deltaBalance = address(this).balance;
         uint256 fee = _vaultStorage.apeCoinStaking.quoteRequest(poolId_, tokenIds_);
-        uint256 paidFee;
 
-        // all rewards paid gas fee in first
-        if (rewards > fee) {
-            rewards -= fee;
-            paidFee = fee;
-        } else {
-            paidFee = rewards;
-            rewards = 0;
+        // no need to claim the dust rewards
+        if (rewards <= fee) {
+            return 0;
         }
+        // all rewards paid gas fee in first
+        rewards -= fee;
 
         _vaultStorage.apeCoinStaking.claim{value: fee}(poolId_, tokenIds_, address(this));
 
@@ -418,8 +415,8 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         if (address(this).balance > deltaBalance) {
             deltaBalance = address(this).balance - deltaBalance;
 
-            if (deltaBalance > paidFee) {
-                deltaBalance -= paidFee;
+            if (deltaBalance > fee) {
+                deltaBalance -= fee;
             }
 
             if (deltaBalance > 0) {

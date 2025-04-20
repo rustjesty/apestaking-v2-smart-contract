@@ -88,6 +88,15 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
         apeCoinStaking = IApeCoinStaking(apeCoinStaking_);
     }
 
+    function setStNftAddresses(IStakedNft stBayc_, IStakedNft stMayc_, IStakedNft stBakc_) public onlyOwner {
+        bayc = stBayc_.underlyingAsset();
+        mayc = stMayc_.underlyingAsset();
+        bakc = stBakc_.underlyingAsset();
+        poolStates[bayc].stakedNft = stBayc_;
+        poolStates[mayc].stakedNft = stMayc_;
+        poolStates[bakc].stakedNft = stBakc_;
+    }
+
     function deposit(
         address[] calldata nfts_,
         uint256[][] calldata tokenIds_,
@@ -97,6 +106,7 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
         uint256 tokenId_;
         PoolState storage pool_;
 
+        require(owner_ != address(0), "BendNftPool: zero owner");
         _checkDuplicateNfts(nfts_);
         _checkDuplicateTokenIds(tokenIds_);
 
@@ -122,6 +132,7 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
         uint256[][] calldata tokenIds_,
         address owner_
     ) external override onlyApes(nfts_) onlyStaker nonReentrant whenNotPaused {
+        require(owner_ != address(0), "BendNftPool: zero owner");
         _checkDuplicateNfts(nfts_);
         _checkDuplicateTokenIds(tokenIds_);
 
