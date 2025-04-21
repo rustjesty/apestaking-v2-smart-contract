@@ -515,6 +515,10 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     // Withdraw Pending Funds
     function withdrawPendingFunds(address recipient_) external override onlyAuthorized nonReentrant {
+        if (_vaultStorage.totalPendingFunds == 0) {
+            return;
+        }
+
         uint256 nativeBalance = address(this).balance;
 
         // we must keep minimum gas fee in this contract
