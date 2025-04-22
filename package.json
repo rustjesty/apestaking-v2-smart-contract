@@ -29,6 +29,7 @@
   "scripts": {
     "typechain": "TS_NODE_TRANSPILE_ONLY=true hardhat typechain",
     "size": "npm run compile && hardhat size-contracts",
+    "slither": "slither .",
     "clean": "hardhat clean && forge clean",
     "compile": "TS_NODE_TRANSPILE_ONLY=true hardhat compile",
     "compile:force": "TS_NODE_TRANSPILE_ONLY=true hardhat typechain && hardhat compile --force",
