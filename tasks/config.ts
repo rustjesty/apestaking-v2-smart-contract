@@ -171,6 +171,6 @@ export const COIN_POOL_V1: Params<string> = {
 export const BENDV2_ADDRESS_PROVIDER: Params<string> = {
   [Network.mainnet]: "",
   [Network.sepolia]: "",
-  [Network.apechain]: "",
+  [Network.apechain]: "0x0000000000000000000000000000000000000000",
   [Network.curtis]: "0x0000000000000000000000000000000000000000",
 };
