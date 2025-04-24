@@ -421,7 +421,7 @@ task("prepareUpgrade", "Deploy new implmentation for upgrade")
 task("upgrade", "upgrade contract")
   .addParam("proxyid", "The proxy contract id")
   .addOptionalParam("implid", "The new impl contract id")
-  .addOptionalParam("skipcheck", "Skip upgrade storage check or not")
+  .addFlag("skipcheck", "Skip upgrade storage check or not")
   .setAction(async ({ skipcheck, proxyid, implid }, { ethers, upgrades, run }) => {
     await run("set-DRE");
     await run("compile");

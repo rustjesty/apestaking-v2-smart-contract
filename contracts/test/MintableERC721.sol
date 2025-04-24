@@ -14,6 +14,9 @@ interface IApeCoinStakingCallback {
  * @dev ERC721 minting logic
  */
 contract MintableERC721 is ERC721Enumerable, Ownable {
+    event ReadWithCallback(bytes32 guid, uint256[] tokenIds);
+    event ExecuteCallback(bytes32 guid);
+
     string public baseURI;
     mapping(address => uint256) public mintCounts;
     uint256 public maxSupply;
@@ -76,6 +79,8 @@ contract MintableERC721 is ERC721Enumerable, Ownable {
 
     function executeCallback(address apeCoinStaking_, bytes32 guid_) public {
         IApeCoinStakingCallback(apeCoinStaking_).executeCallback(guid_);
+
+        emit ExecuteCallback(guid_);
     }
 
     function readWithCallback(
@@ -90,6 +95,8 @@ contract MintableERC721 is ERC721Enumerable, Ownable {
         bytes32 guid = getNextGUID();
 
         nextReadId += 1;
+
+        emit ReadWithCallback(guid, tokenIds);
 
         return guid;
     }

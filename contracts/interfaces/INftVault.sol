@@ -40,6 +40,8 @@ interface INftVault is IERC721ReceiverUpgradeable {
         IDelegateRegistryV2 delegationRegistryV2;
         uint256 minGasFeeAmount;
         uint256 totalPendingFunds;
+        // poolId => tokenId => rewardsDebt
+        mapping(uint256 => mapping(uint256 => int256)) pendingClaimRewardsDebts;
     }
 
     struct VaultStorageUI {

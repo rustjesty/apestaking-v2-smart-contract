@@ -609,6 +609,17 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
         return remainApeBalance;
     }
 
+    function fixNftPendingFunds(
+        address nft_,
+        uint256 principal_,
+        uint256 nftRewards_,
+        uint256 coinRewards_
+    ) external onlyOwner {
+        _stakerStorage.pendingFunds[nft_].principal = principal_;
+        _stakerStorage.pendingFunds[nft_].nftRewards = nftRewards_;
+        _stakerStorage.pendingFunds[nft_].coinRewards = coinRewards_;
+    }
+
     // Compound Methods
 
     function _compoudApeCoinPool() internal {

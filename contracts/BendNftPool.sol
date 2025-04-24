@@ -388,4 +388,9 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
         v2PoolManager = v2AddressProvider.getPoolManager();
         v2PoolLens = IPoolLensV2(v2AddressProvider.getPoolModuleProxy(MODULEID__POOL_LENS));
     }
+
+    function fixPoolState(address nft_, uint256 rewardsPerNft_) external onlyOwner {
+        PoolState storage pool = poolStates[nft_];
+        pool.accumulatedRewardsPerNft = rewardsPerNft_;
+    }
 }
