@@ -620,6 +620,10 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
         _stakerStorage.pendingFunds[nft_].coinRewards = coinRewards_;
     }
 
+    function fixPendingFeeAmount(uint256 pendingFeeAmount_) external onlyOwner {
+        _stakerStorage.pendingFeeAmount = pendingFeeAmount_;
+    }
+
     // Compound Methods
 
     function _compoudApeCoinPool() internal {

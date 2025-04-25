@@ -13177,7 +13177,7 @@
             "label": "_stakerStorage",
             "offset": 0,
             "slot": "151",
-            "type": "t_struct(StakerStorage)6650_storage",
+            "type": "t_struct(StakerStorage)4891_storage",
             "contract": "BendStakeManager",
             "src": "contracts/BendStakeManager.sol:79"
           }
@@ -13199,47 +13199,47 @@
             "label": "bool",
             "numberOfBytes": "1"
           },
-          "t_contract(IApeCoinStaking)9622": {
+          "t_contract(IApeCoinStaking)7863": {
             "label": "contract IApeCoinStaking",
             "numberOfBytes": "20"
           },
-          "t_contract(ICoinPool)9776": {
+          "t_contract(ICoinPool)7957": {
             "label": "contract ICoinPool",
             "numberOfBytes": "20"
           },
-          "t_contract(IERC20Upgradeable)752": {
+          "t_contract(IERC20Upgradeable)625": {
             "label": "contract IERC20Upgradeable",
             "numberOfBytes": "20"
           },
-          "t_contract(INftPool)10216": {
+          "t_contract(INftPool)8397": {
             "label": "contract INftPool",
             "numberOfBytes": "20"
           },
-          "t_contract(INftVault)10625": {
+          "t_contract(INftVault)8806": {
             "label": "contract INftVault",
             "numberOfBytes": "20"
           },
-          "t_contract(IRewardsStrategy)10633": {
+          "t_contract(IRewardsStrategy)8814": {
             "label": "contract IRewardsStrategy",
             "numberOfBytes": "20"
           },
-          "t_contract(IStakedNft)11063": {
+          "t_contract(IStakedNft)9244": {
             "label": "contract IStakedNft",
             "numberOfBytes": "20"
           },
-          "t_contract(IWithdrawStrategy)11087": {
+          "t_contract(IWithdrawStrategy)9268": {
             "label": "contract IWithdrawStrategy",
             "numberOfBytes": "20"
           },
-          "t_mapping(t_address,t_contract(IRewardsStrategy)10633)": {
+          "t_mapping(t_address,t_contract(IRewardsStrategy)8814)": {
             "label": "mapping(address => contract IRewardsStrategy)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(PendingFund)6657_storage)": {
+          "t_mapping(t_address,t_struct(PendingFund)4898_storage)": {
             "label": "mapping(address => struct BendStakeManager.PendingFund)",
             "numberOfBytes": "32"
           },
-          "t_struct(PendingFund)6657_storage": {
+          "t_struct(PendingFund)4898_storage": {
             "label": "struct BendStakeManager.PendingFund",
             "members": [
               {
@@ -13263,18 +13263,18 @@
             ],
             "numberOfBytes": "96"
           },
-          "t_struct(StakerStorage)6650_storage": {
+          "t_struct(StakerStorage)4891_storage": {
             "label": "struct BendStakeManager.StakerStorage",
             "members": [
               {
                 "label": "rewardsStrategies",
-                "type": "t_mapping(t_address,t_contract(IRewardsStrategy)10633)",
+                "type": "t_mapping(t_address,t_contract(IRewardsStrategy)8814)",
                 "offset": 0,
                 "slot": "0"
               },
               {
                 "label": "withdrawStrategy",
-                "type": "t_contract(IWithdrawStrategy)11087",
+                "type": "t_contract(IWithdrawStrategy)9268",
                 "offset": 0,
                 "slot": "1"
               },
@@ -13304,49 +13304,49 @@
               },
               {
                 "label": "apeCoinStaking",
-                "type": "t_contract(IApeCoinStaking)9622",
+                "type": "t_contract(IApeCoinStaking)7863",
                 "offset": 0,
                 "slot": "6"
               },
               {
                 "label": "wrapApeCoin",
-                "type": "t_contract(IERC20Upgradeable)752",
+                "type": "t_contract(IERC20Upgradeable)625",
                 "offset": 0,
                 "slot": "7"
               },
               {
                 "label": "nftVault",
-                "type": "t_contract(INftVault)10625",
+                "type": "t_contract(INftVault)8806",
                 "offset": 0,
                 "slot": "8"
               },
               {
                 "label": "coinPool",
-                "type": "t_contract(ICoinPool)9776",
+                "type": "t_contract(ICoinPool)7957",
                 "offset": 0,
                 "slot": "9"
               },
               {
                 "label": "nftPool",
-                "type": "t_contract(INftPool)10216",
+                "type": "t_contract(INftPool)8397",
                 "offset": 0,
                 "slot": "10"
               },
               {
                 "label": "stBayc",
-                "type": "t_contract(IStakedNft)11063",
+                "type": "t_contract(IStakedNft)9244",
                 "offset": 0,
                 "slot": "11"
               },
               {
                 "label": "stMayc",
-                "type": "t_contract(IStakedNft)11063",
+                "type": "t_contract(IStakedNft)9244",
                 "offset": 0,
                 "slot": "12"
               },
               {
                 "label": "stBakc",
-                "type": "t_contract(IStakedNft)11063",
+                "type": "t_contract(IStakedNft)9244",
                 "offset": 0,
                 "slot": "13"
               },
@@ -13376,7 +13376,291 @@
               },
               {
                 "label": "pendingFunds",
-                "type": "t_mapping(t_address,t_struct(PendingFund)6657_storage)",
+                "type": "t_mapping(t_address,t_struct(PendingFund)4898_storage)",
+                "offset": 0,
+                "slot": "18"
+              }
+            ],
+            "numberOfBytes": "608"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "9b49505de4453ca28b4be28ea614ace8a4ff99991aa7387af85acea36c762e93": {
+      "address": "0xE63eC0d0b462749bd4DDC5101026de10225A19d4",
+      "txHash": "0xc407b170f101b9488b2ee10e808984de9d55e5c789ad6a359d1fe351022a92c0",
+      "layout": {
+        "solcVersion": "0.8.18",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:80"
+          },
+          {
+            "label": "_stakerStorage",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_struct(StakerStorage)4891_storage",
+            "contract": "BendStakeManager",
+            "src": "contracts/BendStakeManager.sol:79"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IApeCoinStaking)7877": {
+            "label": "contract IApeCoinStaking",
+            "numberOfBytes": "20"
+          },
+          "t_contract(ICoinPool)7971": {
+            "label": "contract ICoinPool",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IERC20Upgradeable)625": {
+            "label": "contract IERC20Upgradeable",
+            "numberOfBytes": "20"
+          },
+          "t_contract(INftPool)8411": {
+            "label": "contract INftPool",
+            "numberOfBytes": "20"
+          },
+          "t_contract(INftVault)8820": {
+            "label": "contract INftVault",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IRewardsStrategy)8828": {
+            "label": "contract IRewardsStrategy",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IStakedNft)9258": {
+            "label": "contract IStakedNft",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IWithdrawStrategy)9282": {
+            "label": "contract IWithdrawStrategy",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_contract(IRewardsStrategy)8828)": {
+            "label": "mapping(address => contract IRewardsStrategy)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(PendingFund)4898_storage)": {
+            "label": "mapping(address => struct BendStakeManager.PendingFund)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(PendingFund)4898_storage": {
+            "label": "struct BendStakeManager.PendingFund",
+            "members": [
+              {
+                "label": "principal",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "nftRewards",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "coinRewards",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(StakerStorage)4891_storage": {
+            "label": "struct BendStakeManager.StakerStorage",
+            "members": [
+              {
+                "label": "rewardsStrategies",
+                "type": "t_mapping(t_address,t_contract(IRewardsStrategy)8828)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "withdrawStrategy",
+                "type": "t_contract(IWithdrawStrategy)9282",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "feeRecipient",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "pendingFeeAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "apeCoinPoolStakedAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "apeCoinStaking",
+                "type": "t_contract(IApeCoinStaking)7877",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "wrapApeCoin",
+                "type": "t_contract(IERC20Upgradeable)625",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "nftVault",
+                "type": "t_contract(INftVault)8820",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "coinPool",
+                "type": "t_contract(ICoinPool)7971",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "nftPool",
+                "type": "t_contract(INftPool)8411",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "stBayc",
+                "type": "t_contract(IStakedNft)9258",
+                "offset": 0,
+                "slot": "11"
+              },
+              {
+                "label": "stMayc",
+                "type": "t_contract(IStakedNft)9258",
+                "offset": 0,
+                "slot": "12"
+              },
+              {
+                "label": "stBakc",
+                "type": "t_contract(IStakedNft)9258",
+                "offset": 0,
+                "slot": "13"
+              },
+              {
+                "label": "bayc",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "14"
+              },
+              {
+                "label": "mayc",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "15"
+              },
+              {
+                "label": "bakc",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "16"
+              },
+              {
+                "label": "botAdmin",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "17"
+              },
+              {
+                "label": "pendingFunds",
+                "type": "t_mapping(t_address,t_struct(PendingFund)4898_storage)",
                 "offset": 0,
                 "slot": "18"
               }
