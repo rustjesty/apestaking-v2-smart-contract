@@ -614,6 +614,8 @@ makeSuite("BendStakeManager", (contracts: Contracts, env: Env, snapshots: Snapsh
       await contracts.bendStakeManager.totalPendingRewards()
     );
 
+    console.log("test:withdrawApeCoin:", withdrawAmount);
+
     const coinPoolSigner = await ethers.getSigner(contracts.bendCoinPool.address);
     const preBalance = await contracts.wrapApeCoin.balanceOf(contracts.bendCoinPool.address);
     const preNftPoolBalance = await contracts.wrapApeCoin.balanceOf(contracts.bendNftPool.address);

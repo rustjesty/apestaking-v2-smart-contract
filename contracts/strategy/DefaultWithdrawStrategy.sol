@@ -65,21 +65,17 @@ contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuard, Ownable 
     }
 
     struct WithdrawApeCoinVars {
-        uint256 margin;
         uint256 tokenId;
         uint256 stakedApeCoin;
         uint256 pendingRewards;
         uint256 unstakeNftSize;
         uint256 totalWithdrawn;
-        uint256 changedBalance;
-        uint256 initBalance;
     }
 
     function withdrawApeCoin(uint256 required) external override onlyStaker returns (uint256 withdrawn) {
         require(address(wrapApeCoin) != address(0), "DWS: wrapApeCoin not set");
 
         WithdrawApeCoinVars memory vars;
-        vars.initBalance = wrapApeCoin.balanceOf(address(coinPool));
 
         // 1. withdraw refund
 
@@ -88,13 +84,11 @@ contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuard, Ownable 
         // 3. unstake ape coin pool
 
         // 4. unstake bayc
-        if (vars.changedBalance < required) {
+        if (vars.totalWithdrawn < required) {
             vars.stakedApeCoin = staker.stakedApeCoin(ApeStakingLib.BAYC_POOL_ID);
             if (vars.stakedApeCoin > 0) {
-                vars.margin = required - vars.changedBalance;
                 vars.tokenId = 0;
                 vars.unstakeNftSize = 0;
-                vars.totalWithdrawn = 0;
                 vars.stakedApeCoin = 0;
                 vars.pendingRewards = 0;
                 for (uint256 i = 0; i < nftVault.totalStakingNft(bayc, address(staker)); i++) {
@@ -110,7 +104,7 @@ contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuard, Ownable 
                     vars.totalWithdrawn += vars.pendingRewards;
                     vars.unstakeNftSize += 1;
 
-                    if (vars.totalWithdrawn >= vars.margin) {
+                    if (vars.totalWithdrawn >= required) {
                         break;
                     }
                 }
@@ -120,19 +114,16 @@ contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuard, Ownable 
                         tokenIds[i] = nftVault.stakingNftIdByIndex(bayc, address(staker), i);
                     }
                     staker.unstakeBayc(tokenIds);
-                    vars.changedBalance = _changedBalance(address(coinPool), vars.initBalance);
                 }
             }
         }
 
         // 5. unstake mayc
-        if (vars.changedBalance < required) {
+        if (vars.totalWithdrawn < required) {
             vars.stakedApeCoin = staker.stakedApeCoin(ApeStakingLib.MAYC_POOL_ID);
             if (vars.stakedApeCoin > 0) {
-                vars.margin = required - vars.changedBalance;
                 vars.tokenId = 0;
                 vars.unstakeNftSize = 0;
-                vars.totalWithdrawn = 0;
                 vars.stakedApeCoin = 0;
                 vars.pendingRewards = 0;
                 for (uint256 i = 0; i < nftVault.totalStakingNft(mayc, address(staker)); i++) {
@@ -149,7 +140,7 @@ contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuard, Ownable 
 
                     vars.unstakeNftSize += 1;
 
-                    if (vars.totalWithdrawn >= vars.margin) {
+                    if (vars.totalWithdrawn >= required) {
                         break;
                     }
                 }
@@ -159,19 +150,16 @@ contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuard, Ownable 
                         tokenIds[i] = nftVault.stakingNftIdByIndex(mayc, address(staker), i);
                     }
                     staker.unstakeMayc(tokenIds);
-                    vars.changedBalance = _changedBalance(address(coinPool), vars.initBalance);
                 }
             }
         }
 
         // 6. unstake bakc
-        if (vars.changedBalance < required) {
+        if (vars.totalWithdrawn < required) {
             vars.stakedApeCoin = staker.stakedApeCoin(ApeStakingLib.BAKC_POOL_ID);
             if (vars.stakedApeCoin > 0) {
-                vars.margin = required - vars.changedBalance;
                 vars.tokenId = 0;
                 vars.unstakeNftSize = 0;
-                vars.totalWithdrawn = 0;
                 vars.stakedApeCoin = 0;
                 vars.pendingRewards = 0;
                 for (uint256 i = 0; i < nftVault.totalStakingNft(bakc, address(staker)); i++) {
@@ -187,7 +175,7 @@ contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuard, Ownable 
                     vars.totalWithdrawn += vars.pendingRewards;
                     vars.unstakeNftSize += 1;
 
-                    if (vars.totalWithdrawn >= vars.margin) {
+                    if (vars.totalWithdrawn >= required) {
                         break;
                     }
                 }
@@ -197,15 +185,11 @@ contract DefaultWithdrawStrategy is IWithdrawStrategy, ReentrancyGuard, Ownable 
                         tokenIds[i] = nftVault.stakingNftIdByIndex(bakc, address(staker), i);
                     }
                     staker.unstakeBakc(tokenIds);
-                    vars.changedBalance = _changedBalance(address(coinPool), vars.initBalance);
                 }
             }
         }
 
-        withdrawn = vars.changedBalance;
-    }
-
-    function _changedBalance(address recipient_, uint256 initBalance_) internal view returns (uint256) {
-        return wrapApeCoin.balanceOf(recipient_) - initBalance_;
+        // Caution: unstake nfts are asynchronous, the balance in our pool maybe not changed
+        withdrawn = vars.totalWithdrawn;
     }
 }

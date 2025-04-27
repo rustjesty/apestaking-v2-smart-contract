@@ -28,6 +28,8 @@ contract BendCoinPool is
     IStakeManager public staker;
 
     uint256 public override pendingApeCoin;
+    mapping(address => uint256) public requestWithdrawAllTimestamps;
+    uint40 public requestWithdrawAllInterval;
 
     modifier onlyStaker() {
         require(msg.sender == address(staker), "BendCoinPool: caller is not staker");
@@ -44,6 +46,7 @@ contract BendCoinPool is
 
         apeCoinStaking = apeStaking_;
         staker = staker_;
+        requestWithdrawAllInterval = 4 hours;
     }
 
     function setApeCoinStaking(address apeCoinStaking_) public onlyOwner {
@@ -109,6 +112,24 @@ contract BendCoinPool is
         return assets;
     }
 
+    function requestWithdrawAllSelfAssets() public returns (uint256) {
+        // check if the last request time is more than X hours
+        uint256 lastReqTime_ = requestWithdrawAllTimestamps[msg.sender];
+        require(
+            block.timestamp > (lastReqTime_ + requestWithdrawAllInterval),
+            "BendCoinPool: request withdraw all too fast"
+        );
+
+        requestWithdrawAllTimestamps[msg.sender] = block.timestamp;
+
+        _compoundApeCoin();
+
+        uint256 assets = assetBalanceOf(msg.sender);
+        _withdrawApeCoin(assets);
+
+        return assets;
+    }
+
     function _withdraw(
         address caller,
         address receiver,
@@ -116,11 +137,11 @@ contract BendCoinPool is
         uint256 assets,
         uint256 shares
     ) internal override(ERC4626Upgradeable) nonReentrant whenNotPaused {
-        // CAUYION: It is possible to change the share price here, but we have calculated the assets and shares using
-        // the previous price, No recalculation even if price changed
-        _withdrawApeCoin(assets);
+        require(pendingApeCoin >= assets, "BendCoinPool: not enough assets");
+
         // transfer ape coin to receiver
         super._withdraw(caller, receiver, owner, assets, shares);
+
         // decrease pending amount
         pendingApeCoin -= assets;
     }
@@ -138,6 +159,7 @@ contract BendCoinPool is
 
         // transfer ape coin from caller
         super._deposit(caller, receiver, assets, shares);
+
         // increase pending amount
         pendingApeCoin += assets;
     }
@@ -145,12 +167,20 @@ contract BendCoinPool is
     function _withdrawApeCoin(uint256 assets) internal {
         if (pendingApeCoin < assets) {
             uint256 required = assets - pendingApeCoin;
-            require(staker.withdrawApeCoin(required) >= (required), "BendCoinPool: withdraw failed");
+            staker.withdrawApeCoin(required);
         }
     }
 
-    function assetBalanceOf(address account) external view override returns (uint256) {
+    function assetBalanceOf(address account) public view override returns (uint256) {
         return convertToAssets(balanceOf(account));
+    }
+
+    function assetWithdrawableOf(address account) public view returns (uint256) {
+        uint256 assets = convertToAssets(balanceOf(account));
+        if (pendingApeCoin < assets) {
+            assets = pendingApeCoin;
+        }
+        return assets;
     }
 
     function receiveApeCoin(uint256 principalAmount, uint256 rewardsAmount_) external override onlyStaker {
@@ -169,12 +199,14 @@ contract BendCoinPool is
     }
 
     function compoundApeCoin() external override onlyStaker {
+        _compoundApeCoin();
+    }
+
+    function _compoundApeCoin() internal {
         // WAPE has native yield, we need distribute it to holders through rebalance.
         // The pendingApeCoin should less or equal (<=) than WAPE balance.
-        // We can not remove pendingApeCoin field to avoid attack.
-        uint256 nativeBalance = wrapApeCoin.balanceOf(address(this));
-        require(pendingApeCoin <= nativeBalance, "BendCoinPool: pending apecoin not match native balance");
-        pendingApeCoin = nativeBalance;
+        // We can not remove pendingApeCoin field to avoid attack like flash loan.
+        pendingApeCoin = wrapApeCoin.balanceOf(address(this));
     }
 
     function setPause(bool flag) public onlyOwner {
@@ -183,5 +215,9 @@ contract BendCoinPool is
         } else {
             _unpause();
         }
+    }
+
+    function setRequestWithdrawAllInterval(uint40 interval) public onlyOwner {
+        requestWithdrawAllInterval = interval;
     }
 }
