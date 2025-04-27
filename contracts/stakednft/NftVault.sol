@@ -433,6 +433,7 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
         // no need to claim the dust rewards
         if (rewards <= fee) {
+            _clearPendingClaimTokens(poolId_, needClaimTokenIds);
             return 0;
         }
         // all rewards paid gas fee in first
@@ -472,7 +473,7 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
     function _updatePendingClaimTokens(
         uint256 poolId_,
-        uint256[] calldata tokenIds_
+        uint256[] memory tokenIds_
     ) internal returns (uint256[] memory) {
         IApeCoinStaking.Position memory position_;
         int256 pendingClaimRewardsDebt_;
@@ -507,6 +508,12 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         }
 
         return needClaimTokenIds;
+    }
+
+    function _clearPendingClaimTokens(uint256 poolId_, uint256[] memory tokenIds_) internal {
+        for (uint256 i = 0; i < tokenIds_.length; i++) {
+            _vaultStorage.pendingClaimRewardsDebts[poolId_][tokenIds_[i]] = 0;
+        }
     }
 
     // BAYC
