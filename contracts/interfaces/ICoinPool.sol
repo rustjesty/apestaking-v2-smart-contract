@@ -26,6 +26,8 @@ interface ICoinPool is IERC4626Upgradeable {
 
     function assetBalanceOf(address account_) external view returns (uint256);
 
+    function assetWithdrawableOf(address account) external view returns (uint256);
+
     function pullApeCoin(uint256 amount_) external;
 
     function receiveApeCoin(uint256 principalAmount, uint256 rewardsAmount_) external;

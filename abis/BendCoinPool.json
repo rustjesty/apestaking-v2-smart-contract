@@ -521,6 +521,30 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "account_",
+        "type": "address"
+      }
+    ],
+    "name": "isRequestWithdrawAllSelfAssetsExpired",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "",
         "type": "address"
       }

@@ -130,6 +130,18 @@ contract BendCoinPool is
         return assets;
     }
 
+    function isRequestWithdrawAllSelfAssetsExpired(address account_) public view returns (bool, uint256) {
+        uint256 lastReqTime_ = requestWithdrawAllTimestamps[account_];
+        uint256 expiredTime_ = lastReqTime_ + requestWithdrawAllInterval;
+
+        bool isExpired_ = block.timestamp > expiredTime_;
+
+        if (lastReqTime_ == 0) {
+            expiredTime_ = 0;
+        }
+        return (isExpired_, expiredTime_);
+    }
+
     function _withdraw(
         address caller,
         address receiver,

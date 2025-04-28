@@ -180,7 +180,9 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
         address tokenOwner_;
 
         for (uint256 i = 0; i < nfts_.length; i++) {
-            require(tokenIds_[i].length > 0, "BendNftPool: empty tokenIds");
+            if (tokenIds_[i].length == 0) {
+                continue;
+            }
             if (v2PoolIds_.length > 0) {
                 require(v2PoolIds_[i].length == tokenIds_[i].length, "BendNftPool: invalid v2PoolIds");
             }
@@ -299,7 +301,11 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
     function claimable(
         address[] calldata nfts_,
         uint256[][] calldata tokenIds_
-    ) external view override onlyApes(nfts_) returns (uint256 amount) {
+    ) public view override onlyApes(nfts_) returns (uint256 amount) {
+        return _claimable(nfts_, tokenIds_);
+    }
+
+    function _claimable(address[] memory nfts_, uint256[][] memory tokenIds_) internal view returns (uint256 amount) {
         PoolState storage pool_;
         address nft_;
         uint256 accumulatedRewardsPerNft_;
@@ -328,6 +334,40 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
         }
     }
 
+    function claimableOf(address account_, address[] calldata nfts_) public view onlyApes(nfts_) returns (uint256) {
+        address nft_;
+        PoolState storage pool_;
+        uint256 tokenNum_;
+        uint256[][] memory tokenIds_ = new uint256[][](nfts_.length);
+
+        for (uint256 nftIdx = 0; nftIdx < nfts_.length; nftIdx++) {
+            nft_ = nfts_[nftIdx];
+            pool_ = poolStates[nft_];
+
+            tokenNum_ = pool_.stakedNft.balanceOf(account_);
+            tokenIds_[nftIdx] = new uint256[](tokenNum_);
+            for (uint256 tokenIdx = 0; tokenIdx < tokenNum_; tokenIdx++) {
+                tokenIds_[nftIdx][tokenIdx] = pool_.stakedNft.tokenOfOwnerByIndex(account_, tokenIdx);
+            }
+        }
+
+        return _claimable(nfts_, tokenIds_);
+    }
+
+    function assetWithdrawableOf(address account_, address[] calldata nfts_) public view returns (uint256) {
+        uint256 claimableAmount = claimableOf(account_, nfts_);
+        if (claimableAmount == 0) {
+            return 0;
+        }
+
+        uint256 withdrawableAmount = coinPool.assetWithdrawableOf(address(this));
+        if (claimableAmount > withdrawableAmount) {
+            claimableAmount = withdrawableAmount;
+        }
+
+        return claimableAmount;
+    }
+
     function _calculateRewards(
         uint256 accumulatedRewardsPerNft,
         uint256 rewardDebt
@@ -345,7 +385,7 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
         return accumulatedRewardsPerNft + ((accumulatedShare * APE_COIN_PRECISION) / nftSupply);
     }
 
-    function _checkDuplicateNfts(address[] calldata nfts_) internal pure {
+    function _checkDuplicateNfts(address[] memory nfts_) internal pure {
         for (uint256 i = 0; i < nfts_.length; i++) {
             for (uint256 j = i + 1; j < nfts_.length; j++) {
                 require(nfts_[i] != nfts_[j], "BendNftPool: duplicate nfts");
@@ -353,7 +393,7 @@ contract BendNftPool is INftPool, OwnableUpgradeable, PausableUpgradeable, Reent
         }
     }
 
-    function _checkDuplicateTokenIds(uint256[][] calldata tokenIds_) internal pure {
+    function _checkDuplicateTokenIds(uint256[][] memory tokenIds_) internal pure {
         for (uint256 i = 0; i < tokenIds_.length; i++) {
             for (uint256 j = 0; j < tokenIds_[i].length; j++) {
                 for (uint256 k = j + 1; k < tokenIds_[i].length; k++) {
