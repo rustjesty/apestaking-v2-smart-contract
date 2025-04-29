@@ -23,6 +23,8 @@ contract BendCoinPool is
     using MathUpgradeable for uint256;
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
+    event UserRequestWithdrawAllSelfAssets(address indexed account, uint256 amount);
+
     IApeCoinStaking public apeCoinStaking;
     IERC20Upgradeable public wrapApeCoin;
     IStakeManager public staker;
@@ -126,6 +128,8 @@ contract BendCoinPool is
 
         uint256 assets = assetBalanceOf(msg.sender);
         _withdrawApeCoin(assets);
+
+        emit UserRequestWithdrawAllSelfAssets(msg.sender, assets);
 
         return assets;
     }

@@ -656,6 +656,19 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
         _distributePendingFunds();
     }
 
+    // @dev Everyone can call this function to compound all pending funds
+    function compoundPendingFunds() external nonReentrant {
+        // compound native yield in ape coin pool
+        _compoudApeCoinPool();
+
+        // distribute pending funds in nft vault
+        // which sent by the official ApeCoinStaking contract in async mode callback
+        _distributePendingFunds();
+
+        // compound ape coin in nft pool
+        _compoudNftPool();
+    }
+
     function compound(CompoundArgs calldata args_) external override nonReentrant onlyBot {
         uint256 claimedNfts;
 
