@@ -311,6 +311,7 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 fee;
         uint256 paidFee;
         uint256 remainRewards;
+        uint256 rawRewards;
     }
 
     function _unstakeNft(
@@ -330,19 +331,18 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
             return (0, 0);
         }
 
-        IApeCoinStaking.Position memory position_;
         for (uint256 i = 0; i < vars.needClaimTokenIds.length; i++) {
             vars.tokenId = vars.needClaimTokenIds[i];
             require(msg.sender == _stakerOf(nft_, vars.tokenId), "nftVault: caller must be nft staker");
             principal += amounts_[i];
 
-            position_ = _vaultStorage.apeCoinStaking.getNftPosition(nft_, vars.tokenId);
-            if (position_.stakedAmount == amounts_[i]) {
+            vars.position_ = _vaultStorage.apeCoinStaking.getNftPosition(nft_, vars.tokenId);
+            if (vars.position_.stakedAmount == amounts_[i]) {
                 _vaultStorage.stakingTokenIds[nft_][msg.sender].remove(vars.tokenId);
                 _vaultStorage.pendingClaimRewardsDebts[poolId_][vars.tokenId] = 0;
             }
 
-            rewards += _vaultStorage.apeCoinStaking.pendingRewards(poolId_, vars.tokenId);
+            vars.rawRewards += _vaultStorage.apeCoinStaking.pendingRewards(poolId_, vars.tokenId);
         }
 
         // withdraw nft from staking, and wrap ape coin
@@ -351,11 +351,11 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         vars.paidFee;
 
         // all rewards paid gas fee in first
-        if (rewards > vars.fee) {
-            rewards -= vars.fee;
+        if (vars.rawRewards > vars.fee) {
             vars.paidFee = vars.fee;
+            rewards = vars.rawRewards - vars.fee;
         } else {
-            vars.paidFee = rewards;
+            vars.paidFee = vars.rawRewards;
             rewards = 0;
         }
 
@@ -398,8 +398,8 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         }
 
         // the claim maybe sync or async, so we need to update rewards debt in advance
-        if (rewards > 0) {
-            _updateRewardsDebt(nft_, msg.sender, rewards);
+        if (vars.rawRewards > 0) {
+            _updateRewardsDebt(nft_, msg.sender, vars.rawRewards);
         }
 
         _decreasePosition(nft_, msg.sender, principal);
@@ -421,10 +421,11 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
             return 0;
         }
 
+        uint256 rawRewards;
         for (uint256 i = 0; i < needClaimTokenIds.length; i++) {
             require(msg.sender == _stakerOf(nft_, needClaimTokenIds[i]), "nftVault: caller must be nft staker");
 
-            rewards += _vaultStorage.apeCoinStaking.pendingRewards(poolId_, needClaimTokenIds[i]);
+            rawRewards += _vaultStorage.apeCoinStaking.pendingRewards(poolId_, needClaimTokenIds[i]);
         }
 
         // claim rewards from staking, and wrap ape coin
@@ -432,12 +433,12 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         uint256 fee = _vaultStorage.apeCoinStaking.quoteRequest(poolId_, needClaimTokenIds);
 
         // no need to claim the dust rewards
-        if (rewards <= fee) {
+        if (rawRewards <= fee) {
             _clearPendingClaimTokens(poolId_, needClaimTokenIds);
             return 0;
         }
         // all rewards paid gas fee in first
-        rewards -= fee;
+        rewards = rawRewards - fee;
 
         _vaultStorage.apeCoinStaking.claim{value: fee}(poolId_, needClaimTokenIds, address(this));
 
@@ -464,8 +465,8 @@ contract NftVault is INftVault, OwnableUpgradeable, ReentrancyGuardUpgradeable {
         }
 
         // the claim maybe sync or async, so we need to update rewards debt in advance
-        if (rewards > 0) {
-            _updateRewardsDebt(nft_, msg.sender, rewards);
+        if (rawRewards > 0) {
+            _updateRewardsDebt(nft_, msg.sender, rawRewards);
         }
 
         emit SingleNftClaimed(nft_, msg.sender, needClaimTokenIds, rewards);
