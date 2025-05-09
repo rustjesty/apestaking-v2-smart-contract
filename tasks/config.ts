@@ -52,7 +52,7 @@ export const FEE: Params<string> = {
 export const FEE_RECIPIENT: Params<string> = {
   [Network.mainnet]: "",
   [Network.sepolia]: "",
-  [Network.apechain]: "0xfa67Ee32DAc2F1202Bc514e5D44CDF512a027a05",
+  [Network.apechain]: "0x5F532d6D901fF6591652355Ed5769AD414E6c6cb",
   [Network.curtis]: "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6",
 };
 
