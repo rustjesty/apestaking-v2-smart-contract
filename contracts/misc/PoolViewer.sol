@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.18;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -18,7 +18,7 @@ import {IAddressProviderV2, IPoolLensV2} from "../interfaces/IBendV2Interfaces.s
 
 import {ApeStakingLib} from "../libraries/ApeStakingLib.sol";
 
-contract PoolViewer is Ownable {
+contract PoolViewer is OwnableUpgradeable {
     using ApeStakingLib for IApeCoinStaking;
     using Math for uint256;
     uint256 public constant PERCENTAGE_FACTOR = 1e4;
@@ -52,13 +52,15 @@ contract PoolViewer is Ownable {
     address public v2PoolManager;
     IPoolLensV2 public v2PoolLens;
 
-    constructor(
+    function initialize(
         IApeCoinStaking apeCoinStaking_,
         ICoinPool coinPool_,
         IStakeManager staker_,
         IBNFTRegistry bnftRegistry_,
         IAddressProviderV2 v2AddressProvider_
-    ) Ownable() {
+    ) external initializer {
+        __Ownable_init();
+
         apeCoinStaking = apeCoinStaking_;
         coinPool = coinPool_;
         staker = staker_;
@@ -335,5 +337,32 @@ contract PoolViewer is Ownable {
             getPoolUIByID(ApeStakingLib.MAYC_POOL_ID),
             getPoolUIByID(ApeStakingLib.BAKC_POOL_ID)
         );
+    }
+
+    function getNftPositionList(
+        address[] calldata nfts_,
+        uint256[][] calldata tokenIds_
+    ) public view returns (uint256[][] memory stakedAmounts) {
+        uint256 poolId_;
+        address nft_;
+        uint256 tokenId_;
+        IApeCoinStaking.Position memory position_;
+
+        require(nfts_.length == tokenIds_.length, "PoolViewer: inconsistent length");
+
+        stakedAmounts = new uint256[][](nfts_.length);
+        for (uint256 i = 0; i < nfts_.length; i++) {
+            nft_ = nfts_[i];
+            poolId_ = apeCoinStaking.getNftPoolId(nft_);
+
+            stakedAmounts[i] = new uint256[](tokenIds_[i].length);
+            for (uint256 j = 0; j < tokenIds_[i].length; j++) {
+                tokenId_ = tokenIds_[i][j];
+                position_ = apeCoinStaking.nftPosition(poolId_, tokenId_);
+                stakedAmounts[i][j] = position_.stakedAmount;
+            }
+        }
+
+        return stakedAmounts;
     }
 }

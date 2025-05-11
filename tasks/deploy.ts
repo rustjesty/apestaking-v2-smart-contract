@@ -236,7 +236,7 @@ task("deploy:PoolViewer", "Deploy PoolViewer").setAction(async (_, { network, ru
   const bnftRegistry = getParams(BNFT_REGISTRY, network.name);
   const v2AddressProvider = getParams(BENDV2_ADDRESS_PROVIDER, network.name);
 
-  await deployContract("PoolViewer", [apeStaking, coinPool, stakeManager, bnftRegistry, v2AddressProvider], true);
+  await deployProxyContract("PoolViewer", [apeStaking, coinPool, stakeManager, bnftRegistry, v2AddressProvider], true);
 });
 
 task("deploy:StakedVoting", "Deploy Voting").setAction(async (_, { network, run }) => {

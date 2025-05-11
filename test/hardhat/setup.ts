@@ -227,6 +227,14 @@ export async function setupEnv(env: Env, contracts: Contracts): Promise<void> {
   await contracts.nftVault.setDelegationRegistryV2Contract(contracts.mockDelegationRegistryV2.address);
 
   await contracts.bendNftPool.setV2AddressProvider(contracts.mockAddressProviderV2.address);
+
+  await contracts.poolViewer.initialize(
+    contracts.apeStaking.address,
+    contracts.bendCoinPool.address,
+    contracts.bendStakeManager.address,
+    contracts.bnftRegistry.address,
+    contracts.mockAddressProviderV2.address
+  );
 }
 
 export async function setupContracts(): Promise<Contracts> {
@@ -304,13 +312,7 @@ export async function setupContracts(): Promise<Contracts> {
   // v2 lending
   const mockAddressProviderV2 = await deployContract<MockAddressProviderV2>("MockAddressProviderV2", []);
 
-  const poolViewer = await deployContract<PoolViewer>("PoolViewer", [
-    apeStaking.address,
-    bendCoinPool.address,
-    bendStakeManager.address,
-    bnftRegistry.address,
-    mockAddressProviderV2.address,
-  ]);
+  const poolViewer = await deployContract<PoolViewer>("PoolViewer", []);
 
   // voting
   const stakedVoting = await deployContract<BendApeCoinStakedVoting>("BendApeCoinStakedVoting", [
