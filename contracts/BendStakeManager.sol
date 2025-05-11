@@ -338,6 +338,33 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
         _stakerStorage.coinPool.pullApeCoin(requiredAmount_);
     }
 
+    function getNftPositionList(
+        address[] calldata nfts_,
+        uint256[][] calldata tokenIds_
+    ) public view returns (uint256[][] memory stakedAmounts) {
+        uint256 poolId_;
+        address nft_;
+        uint256 tokenId_;
+        IApeCoinStaking.Position memory position_;
+
+        require(nfts_.length == tokenIds_.length, "BendStakeManager: inconsistent length");
+
+        stakedAmounts = new uint256[][](nfts_.length);
+        for (uint256 i = 0; i < nfts_.length; i++) {
+            nft_ = nfts_[i];
+            poolId_ = _stakerStorage.apeCoinStaking.getNftPoolId(nft_);
+
+            stakedAmounts[i] = new uint256[](tokenIds_[i].length);
+            for (uint256 j = 0; j < tokenIds_[i].length; j++) {
+                tokenId_ = tokenIds_[i][j];
+                position_ = _stakerStorage.apeCoinStaking.nftPosition(poolId_, tokenId_);
+                stakedAmounts[i][j] = position_.stakedAmount;
+            }
+        }
+
+        return stakedAmounts;
+    }
+
     // ApeCoin Pool which not exist on ApeChain
 
     // Desposit NFTs
