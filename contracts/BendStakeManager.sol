@@ -783,9 +783,13 @@ contract BendStakeManager is IStakeManager, OwnableUpgradeable, ReentrancyGuardU
 
         // transfer fee to recipient
         if (_stakerStorage.pendingFeeAmount > MAX_PENDING_FEE && _stakerStorage.feeRecipient != address(0)) {
-            _stakerStorage.wrapApeCoin.safeTransfer(_stakerStorage.feeRecipient, _stakerStorage.pendingFeeAmount);
+            uint256 feeBalance = _stakerStorage.wrapApeCoin.balanceOf(address(this));
+            if (feeBalance > _stakerStorage.pendingFeeAmount) {
+                feeBalance = _stakerStorage.pendingFeeAmount;
+            }
+            _stakerStorage.wrapApeCoin.safeTransfer(_stakerStorage.feeRecipient, feeBalance);
             // solhint-disable-next-line
-            _stakerStorage.pendingFeeAmount = 0;
+            _stakerStorage.pendingFeeAmount -= feeBalance;
         }
 
         emit Compounded(args_.claimCoinPool, claimedNfts);
