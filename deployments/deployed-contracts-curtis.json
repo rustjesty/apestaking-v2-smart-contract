@@ -70,5 +70,9 @@
   "PoolViewer": {
     "address": "0xa700939369433405E3Be0EC18D0E057E53f00364",
     "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
+  },
+  "BendApeCoinStakedVoting": {
+    "address": "0x85867E4778226Cb6A202F76D4C1516a1719E84c2",
+    "deployer": "0xafF5C36642385b6c7Aaf7585eC785aB2316b5db6"
   }
 }
