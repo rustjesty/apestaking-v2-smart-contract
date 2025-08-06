@@ -1,17 +1,4 @@
-[![Build pass](https://github.com/BendDAO/bend-apestaking-v2-apechain/actions/workflows/tests.yaml/badge.svg)](https://github.com/BendDAO/bend-apestaking-v2-apechain/actions/workflows/tests.yaml)
-[![codecov](https://codecov.io/gh/BendDAO/bend-apestaking-v2-apechain/branch/main/graph/badge.svg?token=lQiF4Ooeh5)](https://codecov.io/gh/BendDAO/bend-apestaking-v2-apechain)
-
-```
-######                       ######     #    #######
-#     # ###### #    # #####  #     #   # #   #     #
-#     # #      ##   # #    # #     #  #   #  #     #
-######  #####  # #  # #    # #     # #     # #     #
-#     # #      #  # # #    # #     # ####### #     #
-#     # #      #   ## #    # #     # #     # #     #
-######  ###### #    # #####  ######  #     # #######
-```
-
-# BendDAO ApeCoin Staking V2
+# ApeCoin Staking V2
 
 ## Description
 

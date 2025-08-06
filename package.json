@@ -2,7 +2,7 @@
   "name": "@benddao/bendApeStaking",
   "version": "1.0.0",
   "description": "Bend ape staking smart contracts",
-  "author": "BendDAO",
+  "author": "https://x.com/soljesty",
   "private": false,
   "files": [
     "/abis/*.json",
@@ -17,11 +17,6 @@
     "node": ">=8.3.0"
   },
   "homepage": "https://benddao.xyz/",
-  "bugs": "https://github.com/BendDAO/bend-apecoin-staking/issues",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/BendDAO/bend-apecoin-staking.git"
-  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
